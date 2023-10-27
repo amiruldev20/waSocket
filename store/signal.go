@@ -1,9 +1,3 @@
-// Copyright (c) 2022 Tulir Asokan
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
 package store
 
 import (
@@ -15,7 +9,7 @@ import (
 	"go.mau.fi/libsignal/state/record"
 	"go.mau.fi/libsignal/state/store"
 
-	"go.mau.fi/whatsmeow/util/keys"
+	"go.amirul.dev/waSocket/util/keys"
 )
 
 var SignalProtobufSerializer = serialize.NewProtoBufSerializer()

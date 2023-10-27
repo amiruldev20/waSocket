@@ -1,17 +1,11 @@
-// Copyright (c) 2021 Tulir Asokan
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
 package events
 
 import (
 	"time"
 
-	"go.mau.fi/whatsmeow/appstate"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
-	"go.mau.fi/whatsmeow/types"
+	"go.amirul.dev/waSocket/appstate"
+	waProto "go.amirul.dev/waSocket/binary/proto"
+	"go.amirul.dev/waSocket/types"
 )
 
 // Contact is emitted when an entry in the user's contact list is modified from another device.
