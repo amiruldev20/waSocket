@@ -18,15 +18,15 @@ import (
 
 	"go.mau.fi/util/random"
 
-	"go.amirul.dev/waSocket/appstate"
-	waBinary "go.amirul.dev/waSocket/binary"
-	waProto "go.amirul.dev/waSocket/binary/proto"
-	"go.amirul.dev/waSocket/socket"
-	"go.amirul.dev/waSocket/store"
-	"go.amirul.dev/waSocket/types"
-	"go.amirul.dev/waSocket/types/events"
-	"go.amirul.dev/waSocket/util/keys"
-	waLog "go.amirul.dev/waSocket/util/log"
+	"github.com/amiruldev20/waSocket/appstate"
+	waBinary "github.com/amiruldev20/waSocket/binary"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/socket"
+	"github.com/amiruldev20/waSocket/store"
+	"github.com/amiruldev20/waSocket/types"
+	"github.com/amiruldev20/waSocket/types/events"
+	"github.com/amiruldev20/waSocket/util/keys"
+	waLog "github.com/amiruldev20/waSocket/util/log"
 )
 
 // EventHandler is a function that can handle events from WhatsApp.

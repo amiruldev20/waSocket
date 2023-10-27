@@ -6,8 +6,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"go.amirul.dev/waSocket/types/events"
-	waLog "go.amirul.dev/waSocket/util/log"
+	"github.com/amiruldev20/waSocket/types/events"
+	waLog "github.com/amiruldev20/waSocket/util/log"
 )
 
 type QRChannelItem struct {

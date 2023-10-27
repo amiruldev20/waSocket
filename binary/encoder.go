@@ -5,8 +5,8 @@ import (
 	"math"
 	"strconv"
 
-	"go.amirul.dev/waSocket/binary/token"
-	"go.amirul.dev/waSocket/types"
+	"github.com/amiruldev20/waSocket/binary/token"
+	"github.com/amiruldev20/waSocket/types"
 )
 
 type binaryEncoder struct {

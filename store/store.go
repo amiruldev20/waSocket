@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	waProto "go.amirul.dev/waSocket/binary/proto"
-	"go.amirul.dev/waSocket/types"
-	"go.amirul.dev/waSocket/util/keys"
-	waLog "go.amirul.dev/waSocket/util/log"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/types"
+	"github.com/amiruldev20/waSocket/util/keys"
+	waLog "github.com/amiruldev20/waSocket/util/log"
 )
 
 type IdentityStore interface {

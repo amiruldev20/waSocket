@@ -12,11 +12,11 @@ import (
 
 	"go.mau.fi/util/random"
 
-	waProto "go.amirul.dev/waSocket/binary/proto"
-	"go.amirul.dev/waSocket/store"
-	"go.amirul.dev/waSocket/types"
-	"go.amirul.dev/waSocket/util/keys"
-	waLog "go.amirul.dev/waSocket/util/log"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/store"
+	"github.com/amiruldev20/waSocket/types"
+	"github.com/amiruldev20/waSocket/util/keys"
+	waLog "github.com/amiruldev20/waSocket/util/log"
 )
 
 // Container is a wrapper for a SQL database that can contain multiple whatsmeow sessions.

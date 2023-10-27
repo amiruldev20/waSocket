@@ -13,10 +13,10 @@ import (
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/pbkdf2"
 
-	waBinary "go.amirul.dev/waSocket/binary"
-	"go.amirul.dev/waSocket/types"
-	"go.amirul.dev/waSocket/util/hkdfutil"
-	"go.amirul.dev/waSocket/util/keys"
+	waBinary "github.com/amiruldev20/waSocket/binary"
+	"github.com/amiruldev20/waSocket/types"
+	"github.com/amiruldev20/waSocket/util/hkdfutil"
+	"github.com/amiruldev20/waSocket/util/keys"
 )
 
 // PairClientType is the type of client to use with PairCode.

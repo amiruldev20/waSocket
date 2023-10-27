@@ -7,7 +7,7 @@ package socket
 import (
 	"errors"
 
-	"go.amirul.dev/waSocket/binary/token"
+	"github.com/amiruldev20/waSocket/binary/token"
 )
 
 const (

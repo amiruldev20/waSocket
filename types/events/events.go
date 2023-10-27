@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	waBinary "go.amirul.dev/waSocket/binary"
-	waProto "go.amirul.dev/waSocket/binary/proto"
-	"go.amirul.dev/waSocket/types"
+	waBinary "github.com/amiruldev20/waSocket/binary"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/types"
 )
 
 // QR is emitted after connecting when there's no session data in the device store.

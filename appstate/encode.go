@@ -8,9 +8,9 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	waProto "go.amirul.dev/waSocket/binary/proto"
-	"go.amirul.dev/waSocket/types"
-	"go.amirul.dev/waSocket/util/cbcutil"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/types"
+	"github.com/amiruldev20/waSocket/util/cbcutil"
 )
 
 // MutationInfo contains information about a single mutation to the app state.

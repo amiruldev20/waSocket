@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	waBinary "go.amirul.dev/waSocket/binary"
-	"go.amirul.dev/waSocket/types"
+	waBinary "github.com/amiruldev20/waSocket/binary"
+	"github.com/amiruldev20/waSocket/types"
 )
 
 // NewsletterSubscribeLiveUpdates subscribes to receive live updates from a WhatsApp channel temporarily (for the duration returned).

@@ -13,8 +13,8 @@ import (
 
 	"go.mau.fi/util/random"
 
-	"go.amirul.dev/waSocket/socket"
-	"go.amirul.dev/waSocket/util/cbcutil"
+	"github.com/amiruldev20/waSocket/socket"
+	"github.com/amiruldev20/waSocket/util/cbcutil"
 )
 
 // UploadResponse contains the data from the attachment upload, which can be put into a message to send the attachment.

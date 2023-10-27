@@ -10,9 +10,9 @@ import (
 	"sync"
 	"time"
 
-	"go.amirul.dev/waSocket/store"
-	"go.amirul.dev/waSocket/types"
-	"go.amirul.dev/waSocket/util/keys"
+	"github.com/amiruldev20/waSocket/store"
+	"github.com/amiruldev20/waSocket/types"
+	"github.com/amiruldev20/waSocket/util/keys"
 )
 
 // ErrInvalidLength is returned by some database getters if the database returned a byte array with an unexpected length.

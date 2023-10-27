@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"hash"
 
-	"go.amirul.dev/waSocket/appstate/lthash"
-	waProto "go.amirul.dev/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/appstate/lthash"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
 )
 
 type Mutation struct {

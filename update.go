@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"go.amirul.dev/waSocket/socket"
-	"go.amirul.dev/waSocket/store"
+	"github.com/amiruldev20/waSocket/socket"
+	"github.com/amiruldev20/waSocket/store"
 )
 
 // CheckUpdateResponse is the data returned by CheckUpdate.

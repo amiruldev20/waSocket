@@ -10,10 +10,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"go.amirul.dev/waSocket"
-	"go.amirul.dev/waSocket/store/sqlstore"
-	"go.amirul.dev/waSocket/types/events"
-	waLog "go.amirul.dev/waSocket/util/log"
+	"github.com/amiruldev20/waSocket"
+	"github.com/amiruldev20/waSocket/store/sqlstore"
+	"github.com/amiruldev20/waSocket/types/events"
+	waLog "github.com/amiruldev20/waSocket/util/log"
 )
 
 func eventHandler(evt interface{}) {

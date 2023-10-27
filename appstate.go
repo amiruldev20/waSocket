@@ -10,12 +10,12 @@ import (
 	"fmt"
 	"time"
 
-	"go.amirul.dev/waSocket/appstate"
-	waBinary "go.amirul.dev/waSocket/binary"
-	waProto "go.amirul.dev/waSocket/binary/proto"
-	"go.amirul.dev/waSocket/store"
-	"go.amirul.dev/waSocket/types"
-	"go.amirul.dev/waSocket/types/events"
+	"github.com/amiruldev20/waSocket/appstate"
+	waBinary "github.com/amiruldev20/waSocket/binary"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/store"
+	"github.com/amiruldev20/waSocket/types"
+	"github.com/amiruldev20/waSocket/types/events"
 )
 
 // FetchAppState fetches updates to the given type of app state. If fullSync is true, the current

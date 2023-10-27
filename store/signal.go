@@ -9,7 +9,7 @@ import (
 	"go.mau.fi/libsignal/state/record"
 	"go.mau.fi/libsignal/state/store"
 
-	"go.amirul.dev/waSocket/util/keys"
+	"github.com/amiruldev20/waSocket/util/keys"
 )
 
 var SignalProtobufSerializer = serialize.NewProtoBufSerializer()

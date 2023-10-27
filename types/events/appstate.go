@@ -3,9 +3,9 @@ package events
 import (
 	"time"
 
-	"go.amirul.dev/waSocket/appstate"
-	waProto "go.amirul.dev/waSocket/binary/proto"
-	"go.amirul.dev/waSocket/types"
+	"github.com/amiruldev20/waSocket/appstate"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/types"
 )
 
 // Contact is emitted when an entry in the user's contact list is modified from another device.

@@ -6,7 +6,7 @@ package lthash
 import (
 	"encoding/binary"
 
-	"go.amirul.dev/waSocket/util/hkdfutil"
+	"github.com/amiruldev20/waSocket/util/hkdfutil"
 )
 
 type LTHash struct {

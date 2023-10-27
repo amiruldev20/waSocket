@@ -3,7 +3,7 @@ package types
 import (
 	"time"
 
-	waProto "go.amirul.dev/waSocket/binary/proto"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
 )
 
 // VerifiedName contains verified WhatsApp business details.

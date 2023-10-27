@@ -15,7 +15,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	waLog "go.amirul.dev/waSocket/util/log"
+	waLog "github.com/amiruldev20/waSocket/util/log"
 )
 
 type Proxy = func(*http.Request) (*url.URL, error)

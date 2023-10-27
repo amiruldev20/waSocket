@@ -1,9 +1,9 @@
 package waSocket
 
 import (
-	waBinary "go.amirul.dev/waSocket/binary"
-	"go.amirul.dev/waSocket/types"
-	"go.amirul.dev/waSocket/types/events"
+	waBinary "github.com/amiruldev20/waSocket/binary"
+	"github.com/amiruldev20/waSocket/types"
+	"github.com/amiruldev20/waSocket/types/events"
 )
 
 // TryFetchPrivacySettings will fetch the user's privacy settings, either from the in-memory cache or from the server.

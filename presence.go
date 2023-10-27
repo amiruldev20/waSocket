@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	waBinary "go.amirul.dev/waSocket/binary"
-	"go.amirul.dev/waSocket/types"
-	"go.amirul.dev/waSocket/types/events"
+	waBinary "github.com/amiruldev20/waSocket/binary"
+	"github.com/amiruldev20/waSocket/types"
+	"github.com/amiruldev20/waSocket/types/events"
 )
 
 func (cli *Client) handleChatState(node *waBinary.Node) {

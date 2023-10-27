@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
-	waBinary "go.amirul.dev/waSocket/binary"
+	waBinary "github.com/amiruldev20/waSocket/binary"
 )
 
 // Miscellaneous errors

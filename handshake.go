@@ -10,9 +10,9 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	waProto "go.amirul.dev/waSocket/binary/proto"
-	"go.amirul.dev/waSocket/socket"
-	"go.amirul.dev/waSocket/util/keys"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/socket"
+	"github.com/amiruldev20/waSocket/util/keys"
 )
 
 const NoiseHandshakeResponseTimeout = 20 * time.Second
