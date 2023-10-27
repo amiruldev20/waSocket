@@ -1,7 +1,7 @@
-// 2023 © Whatsmeow
+// 2023 © waSocket
 // Redeveloped by Amirul Dev
 
-package mywabotGO
+package waSocket_test
 
 import (
 	"context"
@@ -36,7 +36,7 @@ func Example() {
 		panic(err)
 	}
 	clientLog := waLog.Stdout("Client", "DEBUG", true)
-	client := whatsmeow.NewClient(deviceStore, clientLog)
+	client := waSocket.NewClient(deviceStore, clientLog)
 	client.AddEventHandler(eventHandler)
 
 	if client.Store.ID == nil {
