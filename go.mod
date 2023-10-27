@@ -1,4 +1,4 @@
-module go.mau.fi/whatsmeow
+module go.amirul.dev/waSocket
 
 go 1.20
 
