@@ -1,10 +1,4 @@
-// Copyright (c) 2022 Tulir Asokan
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-package whatsmeow
+package waSocket
 
 import (
 	"context"
@@ -12,8 +6,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"go.mau.fi/whatsmeow/types/events"
-	waLog "go.mau.fi/whatsmeow/util/log"
+	"go.amirul.dev/waSocket/types/events"
+	waLog "go.amirul.dev/waSocket/util/log"
 )
 
 type QRChannelItem struct {

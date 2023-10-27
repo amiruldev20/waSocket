@@ -1,10 +1,4 @@
-// Copyright (c) 2023 Tulir Asokan
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-package whatsmeow
+package waSocket
 
 import (
 	"crypto/aes"
@@ -19,10 +13,10 @@ import (
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/pbkdf2"
 
-	waBinary "go.mau.fi/whatsmeow/binary"
-	"go.mau.fi/whatsmeow/types"
-	"go.mau.fi/whatsmeow/util/hkdfutil"
-	"go.mau.fi/whatsmeow/util/keys"
+	waBinary "go.amirul.dev/waSocket/binary"
+	"go.amirul.dev/waSocket/types"
+	"go.amirul.dev/waSocket/util/hkdfutil"
+	"go.amirul.dev/waSocket/util/keys"
 )
 
 // PairClientType is the type of client to use with PairCode.

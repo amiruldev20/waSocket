@@ -1,10 +1,4 @@
-// Copyright (c) 2021 Tulir Asokan
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-package whatsmeow
+package waSocket
 
 import (
 	"context"
@@ -13,8 +7,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	waBinary "go.mau.fi/whatsmeow/binary"
-	"go.mau.fi/whatsmeow/types"
+	waBinary "go.amirul.dev/waSocket/binary"
+	"go.amirul.dev/waSocket/types"
 )
 
 func (cli *Client) generateRequestID() string {

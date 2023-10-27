@@ -1,10 +1,4 @@
-// Copyright (c) 2021 Tulir Asokan
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-package whatsmeow
+package waSocket
 
 import (
 	"context"
@@ -18,10 +12,10 @@ import (
 	"go.mau.fi/libsignal/protocol"
 	"google.golang.org/protobuf/proto"
 
-	waBinary "go.mau.fi/whatsmeow/binary"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
-	"go.mau.fi/whatsmeow/types"
-	"go.mau.fi/whatsmeow/types/events"
+	waBinary "go.amirul.dev/waSocket/binary"
+	waProto "go.amirul.dev/waSocket/binary/proto"
+	"go.amirul.dev/waSocket/types"
+	"go.amirul.dev/waSocket/types/events"
 )
 
 // Number of sent messages to cache in memory for handling retry receipts.
