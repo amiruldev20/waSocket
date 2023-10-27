@@ -1,10 +1,7 @@
-// Copyright (c) 2022 Tulir Asokan
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 2023 © Whatsmeow
+// Redeveloped by Amirul Dev
 
-package whatsmeow
+package waSocket
 
 import (
 	"fmt"
@@ -12,12 +9,12 @@ import (
 	"go.mau.fi/util/random"
 	"google.golang.org/protobuf/proto"
 
-	waBinary "go.mau.fi/whatsmeow/binary"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
-	"go.mau.fi/whatsmeow/types"
-	"go.mau.fi/whatsmeow/types/events"
-	"go.mau.fi/whatsmeow/util/gcmutil"
-	"go.mau.fi/whatsmeow/util/hkdfutil"
+	waBinary "go.amirul.dev/waSocket/binary"
+	waProto "go.amirul.dev/waSocket/binary/proto"
+	"go.amirul.dev/waSocket/types"
+	"go.amirul.dev/waSocket/types/events"
+	"go.amirul.dev/waSocket/util/gcmutil"
+	"go.amirul.dev/waSocket/util/hkdfutil"
 )
 
 func getMediaRetryKey(mediaKey []byte) (cipherKey []byte) {

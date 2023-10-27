@@ -1,11 +1,8 @@
-// Copyright (c) 2021 Tulir Asokan
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 2023 © Whatsmeow
+// Redeveloped by Amirul Dev
 
 // Package whatsmeow implements a client for interacting with the WhatsApp web multidevice API.
-package whatsmeow
+package waSocket
 
 import (
 	"context"
@@ -21,15 +18,15 @@ import (
 
 	"go.mau.fi/util/random"
 
-	"go.mau.fi/whatsmeow/appstate"
-	waBinary "go.mau.fi/whatsmeow/binary"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
-	"go.mau.fi/whatsmeow/socket"
-	"go.mau.fi/whatsmeow/store"
-	"go.mau.fi/whatsmeow/types"
-	"go.mau.fi/whatsmeow/types/events"
-	"go.mau.fi/whatsmeow/util/keys"
-	waLog "go.mau.fi/whatsmeow/util/log"
+	"go.amirul.dev/waSocket/appstate"
+	waBinary "go.amirul.dev/waSocket/binary"
+	waProto "go.amirul.dev/waSocket/binary/proto"
+	"go.amirul.dev/waSocket/socket"
+	"go.amirul.dev/waSocket/store"
+	"go.amirul.dev/waSocket/types"
+	"go.amirul.dev/waSocket/types/events"
+	"go.amirul.dev/waSocket/util/keys"
+	waLog "go.amirul.dev/waSocket/util/log"
 )
 
 // EventHandler is a function that can handle events from WhatsApp.

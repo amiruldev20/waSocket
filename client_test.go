@@ -1,10 +1,7 @@
-// Copyright (c) 2021 Tulir Asokan
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 2023 © Whatsmeow
+// Redeveloped by Amirul Dev
 
-package whatsmeow_test
+package mywabotGO
 
 import (
 	"context"
@@ -13,10 +10,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"go.mau.fi/whatsmeow"
-	"go.mau.fi/whatsmeow/store/sqlstore"
-	"go.mau.fi/whatsmeow/types/events"
-	waLog "go.mau.fi/whatsmeow/util/log"
+	"go.amirul.dev/waSocket"
+	"go.amirul.dev/waSocket/store/sqlstore"
+	"go.amirul.dev/waSocket/types/events"
+	waLog "go.amirul.dev/waSocket/util/log"
 )
 
 func eventHandler(evt interface{}) {
