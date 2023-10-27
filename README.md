@@ -16,7 +16,9 @@
 </p>
 
 ```
-This library was created in the Golang language and uses sockets. 2x faster and lighter so it doesn't take up a lot of RAM
+This library was created in the Golang language
+and uses sockets. 2x faster and lighter
+so it doesn't take up a lot of RAM
 ```
 
 ## Supported features
