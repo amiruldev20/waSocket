@@ -1,4 +1,4 @@
-module go.amirul.dev/waSocket
+module github.com/amiruldev20/waSocket
 
 go 1.20
 
