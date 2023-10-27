@@ -1,8 +1,5 @@
-// Copyright (c) 2021 Tulir Asokan
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright © 2023 whatsmeow
+// Redeveloped by Amirul Dev
 
 // Package binary implements encoding and decoding documents in WhatsApp's binary XML format.
 package binary
@@ -11,7 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"go.mau.fi/whatsmeow/types"
+	"go.amirul.dev/waSocket/types"
 )
 
 // Attrs is a type alias for the attributes of an XML element (Node).

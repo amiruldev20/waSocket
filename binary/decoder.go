@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"go.mau.fi/whatsmeow/binary/token"
-	"go.mau.fi/whatsmeow/types"
+	"go.amirul.dev/waSocket/binary/token"
+	"go.amirul.dev/waSocket/types"
 )
 
 type binaryDecoder struct {
