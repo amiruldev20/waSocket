@@ -94,6 +94,9 @@ type Client struct {
 	appStateKeyRequests     map[string]time.Time
 	appStateKeyRequestsLock sync.RWMutex
 
+	incomingRetryRequestCounter     map[incomingRetryKey]int
+	incomingRetryRequestCounterLock sync.Mutex
+
 	messageSendLock sync.Mutex
 
 	privacySettingsCache atomic.Value
@@ -183,6 +186,8 @@ func NewClient(deviceStore *store.Device, log waLog.Logger) *Client {
 		handlerQueue:    make(chan *waBinary.Node, handlerQueueSize),
 		appStateProc:    appstate.NewProcessor(deviceStore, log.Sub("AppState")),
 		socketWait:      make(chan struct{}),
+
+		incomingRetryRequestCounter: make(map[incomingRetryKey]int),
 
 		historySyncNotifications: make(chan *waProto.HistorySyncNotification, 32),
 
