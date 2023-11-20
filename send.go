@@ -477,20 +477,17 @@ func (cli *Client) sendNewsletter(to types.JID, id types.MessageID, message *waP
 		return nil, err
 	}
 	plaintextNode := waBinary.Node{
-		Tag:     "message",
-		Attrs:   attrs,
-		Content: []waBinary.Node{plaintextNode},
+		Tag:     "plaintext",
+		Content: plaintext,
+		Attrs:   waBinary.Attrs{},
 	}
 	if mediaType := getMediaTypeFromMessage(message); mediaType != "" {
 		plaintextNode.Attrs["mediatype"] = mediaType
 	}
 	node := waBinary.Node{
-		Tag:   "message",
-		Attrs: attrs,
-		Content: []waBinary.Node{{
-			Tag:     "plaintext",
-			Content: plaintext,
-		}},
+		Tag:     "message",
+		Attrs:   attrs,
+		Content: []waBinary.Node{plaintextNode},
 	}
 	start = time.Now()
 	data, err := cli.sendNodeAndGetData(node)
