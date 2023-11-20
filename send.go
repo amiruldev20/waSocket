@@ -100,6 +100,9 @@ type SendRequestExtra struct {
 	Peer bool
 
 	Timeout time.Duration
+
+	// When sending media to newsletters, the Handle field returned by the file upload.
+	MediaHandle string
 }
 
 // SendMessage sends the given message.
@@ -192,7 +195,7 @@ func (cli *Client) SendMessage(ctx context.Context, to types.JID, message *waPro
 			data, err = cli.sendDM(ctx, to, ownID, req.ID, message, &resp.DebugTimings)
 		}
 	case types.NewsletterServer:
-		data, err = cli.sendNewsletter(to, req.ID, message, &resp.DebugTimings)
+		data, err = cli.sendNewsletter(to, req.ID, message, req.MediaHandle, &resp.DebugTimings)
 	default:
 		err = fmt.Errorf("%w %s", ErrUnknownServer, to.Server)
 	}
@@ -451,11 +454,14 @@ func participantListHashV2(participants []types.JID) string {
 	return fmt.Sprintf("2:%s", base64.RawStdEncoding.EncodeToString(hash[:6]))
 }
 
-func (cli *Client) sendNewsletter(to types.JID, id types.MessageID, message *waProto.Message, timings *MessageDebugTimings) ([]byte, error) {
+func (cli *Client) sendNewsletter(to types.JID, id types.MessageID, message *waProto.Message, mediaID string, timings *MessageDebugTimings) ([]byte, error) {
 	attrs := waBinary.Attrs{
 		"to":   to,
 		"id":   id,
 		"type": getTypeFromMessage(message),
+	}
+	if mediaID != "" {
+		attrs["media_id"] = mediaID
 	}
 	if message.EditedMessage != nil {
 		attrs["edit"] = string(types.EditAttributeAdminEdit)
@@ -469,6 +475,14 @@ func (cli *Client) sendNewsletter(to types.JID, id types.MessageID, message *waP
 	timings.Marshal = time.Since(start)
 	if err != nil {
 		return nil, err
+	}
+	plaintextNode := waBinary.Node{
+		Tag:     "message",
+		Attrs:   attrs,
+		Content: []waBinary.Node{plaintextNode},
+	}
+	if mediaType := getMediaTypeFromMessage(message); mediaType != "" {
+		plaintextNode.Attrs["mediatype"] = mediaType
 	}
 	node := waBinary.Node{
 		Tag:   "message",
