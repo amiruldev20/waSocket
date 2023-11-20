@@ -41,7 +41,7 @@ func (cli *Client) GenerateMessageID() types.MessageID {
 	}
 	data = append(data, random.Bytes(16)...)
 	hash := sha256.Sum256(data)
-	return "3EB0" + strings.ToUpper(hex.EncodeToString(hash[:9]))
+	return "W4S0CK" + strings.ToUpper(hex.EncodeToString(hash[:9]))
 }
 
 // GenerateMessageID generates a random string that can be used as a message ID on WhatsApp.
@@ -51,7 +51,7 @@ func (cli *Client) GenerateMessageID() types.MessageID {
 //
 // Deprecated: WhatsApp web has switched to using a hash of the current timestamp, user id and random bytes. Use Client.GenerateMessageID instead.
 func GenerateMessageID() types.MessageID {
-	return "3EB0" + strings.ToUpper(hex.EncodeToString(random.Bytes(8)))
+	return "W4S0CK" + strings.ToUpper(hex.EncodeToString(random.Bytes(8)))
 }
 
 type MessageDebugTimings struct {
@@ -98,6 +98,8 @@ type SendRequestExtra struct {
 	ID types.MessageID
 	// Should the message be sent as a peer message (protocol messages to your own devices, e.g. app state key requests)
 	Peer bool
+
+	Timeout time.Duration
 }
 
 // SendMessage sends the given message.
@@ -140,6 +142,10 @@ func (cli *Client) SendMessage(ctx context.Context, to types.JID, message *waPro
 	if ownID.IsEmpty() {
 		err = ErrNotLoggedIn
 		return
+	}
+
+	if req.Timeout == 0 {
+		req.Timeout = defaultRequestTimeout
 	}
 
 	if len(req.ID) == 0 {
@@ -196,9 +202,20 @@ func (cli *Client) SendMessage(ctx context.Context, to types.JID, message *waPro
 		return
 	}
 	var respNode *waBinary.Node
+	var timeoutChan <-chan time.Time
+	if req.Timeout > 0 {
+		timeoutChan = time.After(req.Timeout)
+	} else {
+		timeoutChan = make(<-chan time.Time)
+	}
 	select {
 	case respNode = <-respChan:
+	case <-timeoutChan:
+		cli.cancelResponse(req.ID, respChan)
+		err = ErrMessageTimedOut
+		return
 	case <-ctx.Done():
+		cli.cancelResponse(req.ID, respChan)
 		err = ctx.Err()
 		return
 	}
