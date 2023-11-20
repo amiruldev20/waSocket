@@ -1,5 +1,5 @@
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#table-of-contents)
-# MYWAJS
+# waSocket
 [COMMUNITY - CLICK HERE](https://chat.whatsapp.com/BIHE3USWr4lAnahwJTQEOX) - [DOCS waSocket - Soon ](https://waSocket.amirull.dev)
 
  > *NB*: This is a whatsmeow library that has been redeveloped and fixed some bugs
