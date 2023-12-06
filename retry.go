@@ -345,6 +345,6 @@ func (cli *Client) sendRetryReceipt(node *waBinary.Node, info *types.MessageInfo
 	}
 	err := cli.sendNode(payload)
 	if err != nil {
-		cli.Log.Errorf("Failed to send retry receipt for %s: %v", id, err)
+		//cli.Log.Errorf("Failed to send retry receipt for %s: %v", id, err)
 	}
 }
