@@ -57,6 +57,9 @@ type Client struct {
 	AutoReconnectTimes    int
 	LastSuccessfulConnect time.Time
 	AutoReconnectErrors   int
+	// AutoReconnectHook is called when auto-reconnection fails. If the function returns false,
+	// the client will not attempt to reconnect. The number of retries can be read from AutoReconnectErrors.
+	AutoReconnectHook func(error) bool
 
 	sendActiveReceipts uint32
 
@@ -202,7 +205,7 @@ func NewClient(deviceStore *store.Device, log waLog.Logger) *Client {
 		pendingPhoneRerequests: make(map[types.MessageID]context.CancelFunc),
 
 		EnableAutoReconnect:   true,
-		AutoReconnectTimes:  0,
+		AutoReconnectTimes:    0,
 		AutoTrustIdentity:     true,
 		DontSendSelfBroadcast: true,
 	}
@@ -380,9 +383,9 @@ func (cli *Client) autoReconnect() {
 			cli.Log.Debugf("Connect() said we're already connected after autoreconnect sleep")
 			return
 		} else if err != nil {
-			cli.Log.Errorf("Error reconnecting after autoreconnect sleep: %v,automatically retried %d times so far", err, thisAutoReconnect)
-			if cli.AutoReconnectTimes > 0 && thisAutoReconnect >= cli.AutoReconnectTimes {
-				cli.Log.Errorf("Max autoreconnects reached, giving up")
+			cli.Log.Errorf("Error reconnecting after autoreconnect sleep: %v", err)
+			if cli.AutoReconnectHook != nil && !cli.AutoReconnectHook(err) {
+				cli.Log.Debugf("AutoReconnectHook returned false, not reconnecting")
 				return
 			}
 		} else {
