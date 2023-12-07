@@ -19,7 +19,7 @@ func (cli *Client) handleReceipt(node *waBinary.Node) {
 			go func() {
 				err := cli.handleRetryReceipt(receipt, node)
 				if err != nil {
-					cli.Log.Errorf("Failed to handle retry receipt for %s/%s from %s: %v", receipt.Chat, receipt.MessageIDs[0], receipt.Sender, err)
+					//cli.Log.Errorf("Failed to handle retry receipt for %s/%s from %s: %v", receipt.Chat, receipt.MessageIDs[0], receipt.Sender, err)
 				}
 			}()
 		}
