@@ -28,18 +28,18 @@ import (
 	"github.com/mdp/qrterminal/v3"
 	"google.golang.org/protobuf/proto"
 
-	"go.mau.fi/whatsmeow"
-	"go.mau.fi/whatsmeow/appstate"
-	waBinary "go.mau.fi/whatsmeow/binary"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
-	"go.mau.fi/whatsmeow/store"
-	"go.mau.fi/whatsmeow/store/sqlstore"
-	"go.mau.fi/whatsmeow/types"
-	"go.mau.fi/whatsmeow/types/events"
-	waLog "go.mau.fi/whatsmeow/util/log"
+	"github.com/amiruldev20/waSocket"
+	"github.com/amiruldev20/waSocket/appstate"
+	waBinary "github.com/amiruldev20/waSocket/binary"
+	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/store"
+	"github.com/amiruldev20/waSocket/store/sqlstore"
+	"github.com/amiruldev20/waSocket/types"
+	"github.com/amiruldev20/waSocket/types/events"
+	waLog "github.com/amiruldev20/waSocket/util/log"
 )
 
-var cli *whatsmeow.Client
+var cli *waSocket.Client
 var log waLog.Logger
 
 var logLevel = "INFO"
@@ -58,6 +58,11 @@ func main() {
 	}
 	if *requestFullSync {
 		store.DeviceProps.RequireFullSync = proto.Bool(true)
+		store.DeviceProps.HistorySyncConfig = &waProto.DeviceProps_HistorySyncConfig{
+			FullSyncDaysLimit:   proto.Uint32(3650),
+			FullSyncSizeMbLimit: proto.Uint32(102400),
+			StorageQuotaMb:      proto.Uint32(102400),
+		}
 	}
 	log = waLog.Stdout("Main", logLevel, true)
 
@@ -73,7 +78,7 @@ func main() {
 		return
 	}
 
-	cli = whatsmeow.NewClient(device, waLog.Stdout("Client", logLevel, true))
+	cli = waSocket.NewClient(device, waLog.Stdout("Client", logLevel, true))
 	var isWaitingForPair atomic.Bool
 	cli.PrePairCallback = func(jid types.JID, platform, businessName string) bool {
 		isWaitingForPair.Store(true)
@@ -94,7 +99,7 @@ func main() {
 	ch, err := cli.GetQRChannel(context.Background())
 	if err != nil {
 		// This error means that we're already logged in, so ignore it.
-		if !errors.Is(err, whatsmeow.ErrQRStoreContainsID) {
+		if !errors.Is(err, waSocket.ErrQRStoreContainsID) {
 			log.Errorf("Failed to get QR channel: %v", err)
 		}
 	} else {
@@ -183,7 +188,7 @@ func handleCmd(cmd string, args []string) {
 			log.Errorf("Usage: pair-phone <number>")
 			return
 		}
-		linkingCode, err := cli.PairPhone(args[0], true, whatsmeow.PairClientChrome, "Chrome (Linux)")
+		linkingCode, err := cli.PairPhone(args[0], true, waSocket.PairClientChrome, "Chrome (Linux)")
 		if err != nil {
 			panic(err)
 		}
@@ -249,7 +254,7 @@ func handleCmd(cmd string, args []string) {
 			context.Background(),
 			cli.Store.ID.ToNonAD(),
 			cli.BuildUnavailableMessageRequest(chat, sender, args[2]),
-			whatsmeow.SendRequestExtra{Peer: true},
+			waSocket.SendRequestExtra{Peer: true},
 		)
 		fmt.Println(resp)
 		fmt.Println(err)
@@ -319,6 +324,19 @@ func handleCmd(cmd string, args []string) {
 		} else {
 			fmt.Printf("%+v\n", resp)
 		}
+	case "setprivacysetting":
+		if len(args) < 2 {
+			log.Errorf("Usage: setprivacysetting <setting> <value>")
+			return
+		}
+		setting := types.PrivacySettingType(args[0])
+		value := types.PrivacySetting(args[1])
+		resp, err := cli.SetPrivacySetting(setting, value)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Printf("%+v\n", resp)
+		}
 	case "getuser":
 		if len(args) < 1 {
 			log.Errorf("Usage: getuser <jids...>")
@@ -355,6 +373,15 @@ func handleCmd(cmd string, args []string) {
 			log.Errorf("Error sending node: %v", err)
 		} else {
 			log.Infof("Node sent")
+		}
+	case "listnewsletters":
+		newsletters, err := cli.GetSubscribedNewsletters()
+		if err != nil {
+			log.Errorf("Failed to get subscribed newsletters: %v", err)
+			return
+		}
+		for _, newsletter := range newsletters {
+			log.Infof("* %s: %s", newsletter.ID, newsletter.ThreadMeta.Name.Text)
 		}
 	case "getnewsletter":
 		jid, ok := parseJID(args[0])
@@ -415,7 +442,7 @@ func handleCmd(cmd string, args []string) {
 				return
 			}
 		}
-		messages, err := cli.GetNewsletterMessages(jid, &whatsmeow.GetNewsletterMessagesParams{Count: count, Before: before})
+		messages, err := cli.GetNewsletterMessages(jid, &waSocket.GetNewsletterMessagesParams{Count: count, Before: before})
 		if err != nil {
 			log.Errorf("Failed to get messages: %v", err)
 		} else {
@@ -428,7 +455,7 @@ func handleCmd(cmd string, args []string) {
 			log.Errorf("Usage: createnewsletter <name>")
 			return
 		}
-		resp, err := cli.CreateNewsletter(whatsmeow.CreateNewsletterParams{
+		resp, err := cli.CreateNewsletter(waSocket.CreateNewsletterParams{
 			Name: strings.Join(args, " "),
 		})
 		if err != nil {
@@ -457,7 +484,7 @@ func handleCmd(cmd string, args []string) {
 				isCommunity = true
 			}
 		}
-		pic, err := cli.GetProfilePictureInfo(jid, &whatsmeow.GetProfilePictureParams{
+		pic, err := cli.GetProfilePictureInfo(jid, &waSocket.GetProfilePictureParams{
 			Preview:     preview,
 			IsCommunity: isCommunity,
 			ExistingID:  existingID,
@@ -594,9 +621,9 @@ func handleCmd(cmd string, args []string) {
 		if !ok {
 			return
 		}
-		action := whatsmeow.ParticipantChange(args[1])
+		action := waSocket.ParticipantChange(args[1])
 		switch action {
-		case whatsmeow.ParticipantChangeAdd, whatsmeow.ParticipantChangeRemove, whatsmeow.ParticipantChangePromote, whatsmeow.ParticipantChangeDemote:
+		case waSocket.ParticipantChangeAdd, waSocket.ParticipantChangeRemove, waSocket.ParticipantChangePromote, waSocket.ParticipantChangeDemote:
 		default:
 			log.Errorf("Valid actions: add, remove, promote, demote")
 			return
@@ -614,7 +641,7 @@ func handleCmd(cmd string, args []string) {
 			return
 		}
 		for _, item := range resp {
-			if action == whatsmeow.ParticipantChangeAdd && item.Error == 403 && item.AddRequest != nil {
+			if action == waSocket.ParticipantChangeAdd && item.Error == 403 && item.AddRequest != nil {
 				log.Infof("Participant is private: %d %s %s %v", item.Error, item.JID, item.AddRequest.Code, item.AddRequest.Expiration)
 				cli.SendMessage(context.TODO(), item.JID, &waProto.Message{
 					GroupInviteMessage: &waProto.GroupInviteMessage{
@@ -670,6 +697,20 @@ func handleCmd(cmd string, args []string) {
 		err = cli.SetDisappearingTimer(recipient, time.Duration(days)*24*time.Hour)
 		if err != nil {
 			log.Errorf("Failed to set disappearing timer: %v", err)
+		}
+	case "setdefaultdisappeartimer":
+		if len(args) < 1 {
+			log.Errorf("Usage: setdefaultdisappeartimer <days>")
+			return
+		}
+		days, err := strconv.Atoi(args[0])
+		if err != nil {
+			log.Errorf("Invalid duration: %v", err)
+			return
+		}
+		err = cli.SetDefaultDisappearingTimer(time.Duration(days) * 24 * time.Hour)
+		if err != nil {
+			log.Errorf("Failed to set default disappearing timer: %v", err)
 		}
 	case "send":
 		if len(args) < 2 {
@@ -780,7 +821,12 @@ func handleCmd(cmd string, args []string) {
 			log.Errorf("Failed to read %s: %v", args[0], err)
 			return
 		}
-		uploaded, err := cli.Upload(context.Background(), data, whatsmeow.MediaImage)
+		var uploaded waSocket.UploadResponse
+		if recipient.Server == types.NewsletterServer {
+			uploaded, err = cli.UploadNewsletter(context.Background(), data, waSocket.MediaImage)
+		} else {
+			uploaded, err = cli.Upload(context.Background(), data, waSocket.MediaImage)
+		}
 		if err != nil {
 			log.Errorf("Failed to upload file: %v", err)
 			return
@@ -795,11 +841,24 @@ func handleCmd(cmd string, args []string) {
 			FileSha256:    uploaded.FileSHA256,
 			FileLength:    proto.Uint64(uint64(len(data))),
 		}}
-		resp, err := cli.SendMessage(context.Background(), recipient, msg)
+		resp, err := cli.SendMessage(context.Background(), recipient, msg, waSocket.SendRequestExtra{
+			MediaHandle: uploaded.Handle,
+		})
 		if err != nil {
 			log.Errorf("Error sending image message: %v", err)
 		} else {
 			log.Infof("Image message sent (server timestamp: %s)", resp.Timestamp)
+		}
+	case "setpushname":
+		if len(args) == 0 {
+			log.Errorf("Usage: setpushname <name>")
+			return
+		}
+		err := cli.SendAppState(appstate.BuildSettingPushName(strings.Join(args, " ")))
+		if err != nil {
+			log.Errorf("Error setting push name: %v", err)
+		} else {
+			log.Infof("Push name updated")
 		}
 	case "setstatus":
 		if len(args) == 0 {
@@ -906,6 +965,69 @@ func handleCmd(cmd string, args []string) {
 		} else {
 			log.Infof("Blocklist updated: %+v", resp)
 		}
+	case "labelchat":
+		if len(args) < 3 {
+			log.Errorf("Usage: labelchat <jid> <labelID> <action>")
+			return
+		}
+		jid, ok := parseJID(args[0])
+		if !ok {
+			return
+		}
+		labelID := args[1]
+		action, err := strconv.ParseBool(args[2])
+		if err != nil {
+			log.Errorf("invalid third argument: %v", err)
+			return
+		}
+
+		err = cli.SendAppState(appstate.BuildLabelChat(jid, labelID, action))
+		if err != nil {
+			log.Errorf("Error changing chat's label state: %v", err)
+		}
+	case "labelmessage":
+		if len(args) < 4 {
+			log.Errorf("Usage: labelmessage <jid> <labelID> <messageID> <action>")
+			return
+		}
+		jid, ok := parseJID(args[0])
+		if !ok {
+			return
+		}
+		labelID := args[1]
+		messageID := args[2]
+		action, err := strconv.ParseBool(args[3])
+		if err != nil {
+			log.Errorf("invalid fourth argument: %v", err)
+			return
+		}
+
+		err = cli.SendAppState(appstate.BuildLabelMessage(jid, labelID, messageID, action))
+		if err != nil {
+			log.Errorf("Error changing message's label state: %v", err)
+		}
+	case "editlabel":
+		if len(args) < 4 {
+			log.Errorf("Usage: editlabel <labelID> <name> <color> <action>")
+			return
+		}
+		labelID := args[0]
+		name := args[1]
+		color, err := strconv.Atoi(args[2])
+		if err != nil {
+			log.Errorf("invalid third argument: %v", err)
+			return
+		}
+		action, err := strconv.ParseBool(args[3])
+		if err != nil {
+			log.Errorf("invalid fourth argument: %v", err)
+			return
+		}
+
+		err = cli.SendAppState(appstate.BuildLabelEdit(labelID, name, int32(color), action))
+		if err != nil {
+			log.Errorf("Error editing label: %v", err)
+		}
 	}
 }
 
@@ -999,9 +1121,9 @@ func handler(rawEvt interface{}) {
 			log.Infof("Saved image in message to %s", path)
 		}
 	case *events.Receipt:
-		if evt.Type == events.ReceiptTypeRead || evt.Type == events.ReceiptTypeReadSelf {
+		if evt.Type == types.ReceiptTypeRead || evt.Type == types.ReceiptTypeReadSelf {
 			log.Infof("%v was read by %s at %s", evt.MessageIDs, evt.SourceString(), evt.Timestamp)
-		} else if evt.Type == events.ReceiptTypeDelivered {
+		} else if evt.Type == types.ReceiptTypeDelivered {
 			log.Infof("%s was delivered to %s at %s", evt.MessageIDs[0], evt.SourceString(), evt.Timestamp)
 		}
 	case *events.Presence:
