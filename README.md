@@ -29,4 +29,4 @@ so it doesn't take up a lot of RAM
 | Get member request | ✅ |
 | Accept member request | ✅ |
 | Reject member request | ✅ |
-| Amd Etc | ✅ |
+| And Etc | ✅ |
