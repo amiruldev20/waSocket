@@ -39,9 +39,9 @@ func (cli *Client) GenerateMessageID() types.MessageID {
 		data = append(data, []byte(ownID.User)...)
 		data = append(data, []byte("@c.us")...)
 	}
-	data = append(data, random.Bytes(16)...)
+	data = append(data, random.Bytes(32)...)
 	hash := sha256.Sum256(data)
-	return "W4S0CK" + strings.ToUpper(hex.EncodeToString(hash[:9]))
+	return strings.ToUpper(hex.EncodeToString(hash[:9]))
 }
 
 // GenerateMessageID generates a random string that can be used as a message ID on WhatsApp.
@@ -51,7 +51,7 @@ func (cli *Client) GenerateMessageID() types.MessageID {
 //
 // Deprecated: WhatsApp web has switched to using a hash of the current timestamp, user id and random bytes. Use Client.GenerateMessageID instead.
 func GenerateMessageID() types.MessageID {
-	return "W4S0CK" + strings.ToUpper(hex.EncodeToString(random.Bytes(8)))
+	return strings.ToUpper(hex.EncodeToString(random.Bytes(32)))
 }
 
 type MessageDebugTimings struct {
@@ -840,7 +840,7 @@ func (cli *Client) prepareMessageNode(ctx context.Context, to, ownID types.JID, 
 		attrs["edit"] = string(editAttr)
 		encAttrs["decrypt-fail"] = string(events.DecryptFailHide)
 	}
-	if msgType == "reaction" {
+	if msgType == "reaction" || message.GetPollUpdateMessage() != nil {
 		encAttrs["decrypt-fail"] = string(events.DecryptFailHide)
 	}
 
