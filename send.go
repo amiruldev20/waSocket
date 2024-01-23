@@ -32,7 +32,7 @@ import (
 //	msgID := cli.GenerateMessageID()
 //	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, whatsmeow.SendRequestExtra{ID: msgID})
 func (cli *Client) GenerateMessageID() types.MessageID {
-	data := make([]byte, 8, 8+20+16)
+	data := make([]byte, 64) 
 	binary.BigEndian.PutUint64(data, uint64(time.Now().Unix()))
 	ownID := cli.getOwnID()
 	if !ownID.IsEmpty() {
@@ -41,8 +41,9 @@ func (cli *Client) GenerateMessageID() types.MessageID {
 	}
 	data = append(data, random.Bytes(32)...)
 	hash := sha256.Sum256(data)
-	return strings.ToUpper(hex.EncodeToString(hash[:9]))
+	return strings.ToUpper(hex.EncodeToString(hash[:32])) 
 }
+
 
 // GenerateMessageID generates a random string that can be used as a message ID on WhatsApp.
 //
