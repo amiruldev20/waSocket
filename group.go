@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/amiruldev20/waSocket/binary"
 	waBinary "github.com/amiruldev20/waSocket/binary"
 	"github.com/amiruldev20/waSocket/types"
 	"github.com/amiruldev20/waSocket/types/events"
@@ -849,7 +848,7 @@ func (cli *Client) parseGroupChange(node *waBinary.Node) (*events.GroupInfo, err
 			}
 		case "membership_approval_mode":
 			IsApprovalRequired := false
-			if child.Content.([]binary.Node)[0].Attrs["state"] == "on" {
+			if child.Content.([]waBinary.Node)[0].Attrs["state"] == "on" {
 				IsApprovalRequired = true
 			}
 			evt.MembershipApprovalMode = &types.GroupMembershipApprovalMode{
