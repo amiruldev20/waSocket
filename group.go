@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/amiruldev20/waSocket/binary"
 	waBinary "github.com/amiruldev20/waSocket/binary"
 	"github.com/amiruldev20/waSocket/types"
 	"github.com/amiruldev20/waSocket/types/events"
@@ -134,6 +135,7 @@ func (cli *Client) LeaveGroup(jid types.JID) error {
 	})
 	return err
 }
+
 type ParticipantUpdate struct {
 	Status  string         // "200" if successful, otherwise an error code
 	JID     types.JID      // ID of the participant
@@ -240,6 +242,7 @@ func (cli *Client) UpdateGroupRequestParticipants(jid types.JID, participantChan
 }
 
 type GroupApproval string
+
 const (
 	GroupApprovalOn  GroupApproval = "on"
 	GroupApprovalOff GroupApproval = "off"
@@ -249,19 +252,20 @@ const (
 
 func (cli *Client) SetGroupApproval(jid types.JID, option GroupApproval) (*waBinary.Node, error) {
 	resp, err := cli.sendGroupIQ(context.TODO(), iqSet, jid, waBinary.Node{
-			Tag: "membership_approval_mode",
-			Attrs: nil,
-			Content: []waBinary.Node{{
-				Tag:   "group_join",
-				Attrs: waBinary.Attrs{"state": string(option)},
-				Content: nil,
-			}},
+		Tag:   "membership_approval_mode",
+		Attrs: nil,
+		Content: []waBinary.Node{{
+			Tag:     "group_join",
+			Attrs:   waBinary.Attrs{"state": string(option)},
+			Content: nil,
+		}},
 	})
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
+
 // SetGroupPhoto updates the group picture/icon of the given group on WhatsApp.
 // The avatar should be a JPEG photo, other formats may be rejected with ErrInvalidImageFormat.
 // The bytes can be nil to remove the photo. Returns the new picture ID.
@@ -443,6 +447,7 @@ func (cli *Client) GetGroupInfoFromLink(code string) (*types.GroupInfo, error) {
 	} else if err != nil {
 		return nil, err
 	}
+
 	groupNode, ok := resp.GetOptionalChildByTag("group")
 	if !ok {
 		return nil, &ElementMissingError{Tag: "group", In: "response to group link info query"}
@@ -464,6 +469,12 @@ func (cli *Client) JoinGroupWithLink(code string) (types.JID, error) {
 	} else if err != nil {
 		return types.EmptyJID, err
 	}
+
+	membershipApprovalModeNode, ok := resp.GetOptionalChildByTag("membership_approval_request")
+	if ok {
+		return membershipApprovalModeNode.AttrGetter().JID("jid"), nil
+	}
+
 	groupNode, ok := resp.GetOptionalChildByTag("group")
 	if !ok {
 		return types.EmptyJID, &ElementMissingError{Tag: "group", In: "response to group link join query"}
@@ -665,7 +676,8 @@ func (cli *Client) parseGroupNode(groupNode *waBinary.Node) (*types.GroupInfo, e
 			group.DefaultMembershipApprovalMode = childAG.OptionalString("default_membership_approval_mode")
 		case "incognito":
 			group.IsIncognito = true
-		// TODO: membership_approval_mode
+		case "membership_approval_mode":
+			group.IsApprovalRequired = true
 		default:
 			cli.Log.Debugf("Unknown element in group node %s: %s", group.JID.String(), child.XMLString())
 		}
@@ -834,6 +846,14 @@ func (cli *Client) parseGroupChange(node *waBinary.Node) (*events.GroupInfo, err
 			evt.Unlink.Group, err = parseGroupLinkTargetNode(&groupNode)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse group unlink node in group change: %w", err)
+			}
+		case "membership_approval_mode":
+			IsApprovalRequired := false
+			if child.Content.([]binary.Node)[0].Attrs["state"] == "on" {
+				IsApprovalRequired = true
+			}
+			evt.MembershipApprovalMode = &types.GroupMembershipApprovalMode{
+				IsApprovalRequired: IsApprovalRequired,
 			}
 		default:
 			evt.UnknownChanges = append(evt.UnknownChanges, &child)
