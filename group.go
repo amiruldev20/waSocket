@@ -134,7 +134,6 @@ func (cli *Client) LeaveGroup(jid types.JID) error {
 	})
 	return err
 }
-
 type ParticipantUpdate struct {
 	Status  string         // "200" if successful, otherwise an error code
 	JID     types.JID      // ID of the participant
@@ -240,6 +239,29 @@ func (cli *Client) UpdateGroupRequestParticipants(jid types.JID, participantChan
 	return participants, nil
 }
 
+type GroupApproval string
+const (
+	GroupApprovalOn  GroupApproval = "on"
+	GroupApprovalOff GroupApproval = "off"
+)
+
+// SetGroupApproval can be used to change the group approval into on/off
+
+func (cli *Client) SetGroupApproval(jid types.JID, option GroupApproval) (*waBinary.Node, error) {
+	resp, err := cli.sendGroupIQ(context.TODO(), iqSet, jid, waBinary.Node{
+			Tag: "membership_approval_mode",
+			Attrs: nil,
+			Content: []waBinary.Node{{
+				Tag:   "group_join",
+				Attrs: waBinary.Attrs{"state": string(option)},
+				Content: nil,
+			}},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
 // SetGroupPhoto updates the group picture/icon of the given group on WhatsApp.
 // The avatar should be a JPEG photo, other formats may be rejected with ErrInvalidImageFormat.
 // The bytes can be nil to remove the photo. Returns the new picture ID.
