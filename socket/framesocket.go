@@ -1,3 +1,5 @@
+// Copyright (c) 2021 Tulir Asokan
+//
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -27,6 +29,9 @@ type FrameSocket struct {
 	log    waLog.Logger
 	lock   sync.Mutex
 
+	URL         string
+	HTTPHeaders http.Header
+
 	Frames       chan []byte
 	OnDisconnect func(remote bool)
 	WriteTimeout time.Duration
@@ -40,12 +45,15 @@ type FrameSocket struct {
 	partialHeader  []byte
 }
 
-func NewFrameSocket(log waLog.Logger, header []byte, proxy Proxy) *FrameSocket {
+func NewFrameSocket(log waLog.Logger, proxy Proxy) *FrameSocket {
 	return &FrameSocket{
 		conn:   nil,
 		log:    log,
-		Header: header,
+		Header: WAConnHeader,
 		Frames: make(chan []byte),
+
+		URL:         URL,
+		HTTPHeaders: http.Header{"Origin": {Origin}},
 
 		Proxy: proxy,
 	}
@@ -100,9 +108,8 @@ func (fs *FrameSocket) Connect() error {
 		Proxy: fs.Proxy,
 	}
 
-	headers := http.Header{"Origin": []string{Origin}}
-	fs.log.Debugf("Dialing %s", URL)
-	conn, _, err := dialer.Dial(URL, headers)
+	fs.log.Debugf("Dialing %s", fs.URL)
+	conn, _, err := dialer.Dial(fs.URL, fs.HTTPHeaders)
 	if err != nil {
 		cancel()
 		return fmt.Errorf("couldn't dial whatsapp web websocket: %w", err)
