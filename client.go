@@ -127,6 +127,8 @@ type Client struct {
 	// the client will disconnect.
 	PrePairCallback func(jid types.JID, platform, businessName string) bool
 
+	GetClientPayload func() *waProto.ClientPayload
+
 	// Should untrusted identity errors be handled automatically? If true, the stored identity and existing signal
 	// sessions will be removed on untrusted identity errors, and an events.IdentityChange will be dispatched.
 	// If false, decrypting a message from untrusted devices will fail.
@@ -146,6 +148,13 @@ type Client struct {
 
 	proxy socket.Proxy
 	http  *http.Client
+
+	MessengerConfig *MessengerConfig
+}
+
+type MessengerConfig struct {
+	UserAgent string
+	BaseURL   string
 }
 
 // Size of buffer for the channel that all incoming XML nodes go through.
@@ -317,6 +326,14 @@ func (cli *Client) Connect() error {
 
 	cli.resetExpectedDisconnect()
 	fs := socket.NewFrameSocket(cli.Log.Sub("Socket"), cli.proxy)
+	if cli.MessengerConfig != nil {
+		fs.URL = "wss://web-chat-e2ee.facebook.com/ws/chat"
+		fs.HTTPHeaders.Set("Origin", cli.MessengerConfig.BaseURL)
+		fs.HTTPHeaders.Set("User-Agent", cli.MessengerConfig.UserAgent)
+		fs.HTTPHeaders.Set("Sec-Fetch-Dest", "empty")
+		fs.HTTPHeaders.Set("Sec-Fetch-Mode", "websocket")
+		fs.HTTPHeaders.Set("Sec-Fetch-Site", "cross-site")
+	}
 	if err := fs.Connect(); err != nil {
 		fs.Close(0)
 		return err
@@ -433,6 +450,9 @@ func (cli *Client) unlockedDisconnect() {
 // Note that this will not emit any events. The LoggedOut event is only used for external logouts
 // (triggered by the user from the main device or by WhatsApp servers).
 func (cli *Client) Logout() error {
+	if cli.MessengerConfig != nil {
+		return errors.New("can't logout with Messenger credentials")
+	}
 	ownID := cli.getOwnID()
 	if ownID.IsEmpty() {
 		return ErrNotLoggedIn

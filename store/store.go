@@ -1,9 +1,17 @@
+// Copyright (c) 2022 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 // Package store contains interfaces for storing data needed for WhatsApp multidevice.
 package store
 
 import (
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 
 	waProto "github.com/amiruldev20/waSocket/binary/proto"
 	"github.com/amiruldev20/waSocket/types"
@@ -132,6 +140,8 @@ type Device struct {
 	Platform     string
 	BusinessName string
 	PushName     string
+
+	FacebookUUID uuid.UUID
 
 	Initialized   bool
 	Identities    IdentityStore
