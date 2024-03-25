@@ -25,6 +25,7 @@ type GroupInfo struct {
 	GroupParent
 	GroupLinkedParent
 	GroupIsDefaultSub
+	GroupMembershipApprovalMode
 
 	GroupCreated time.Time
 
@@ -32,6 +33,10 @@ type GroupInfo struct {
 	Participants         []GroupParticipant
 
 	MemberAddMode GroupMemberAddMode
+}
+
+type GroupMembershipApprovalMode struct {
+	IsApprovalRequired bool
 }
 
 type GroupParent struct {

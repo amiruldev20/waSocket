@@ -351,6 +351,8 @@ type GroupInfo struct {
 	Announce  *types.GroupAnnounce  // Group announce status change (can only admins send messages?)
 	Ephemeral *types.GroupEphemeral // Disappearing messages change
 
+	MembershipApprovalMode *types.GroupMembershipApprovalMode 
+	
 	Delete *types.GroupDelete
 
 	Link   *types.GroupLinkChange
