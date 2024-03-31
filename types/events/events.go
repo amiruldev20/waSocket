@@ -6,6 +6,9 @@ import (
 	"time"
 
 	waBinary "github.com/amiruldev20/waSocket/binary"
+	"github.com/amiruldev20/waSocket/binary/armadillo/waConsumerApplication"
+	"github.com/amiruldev20/waSocket/binary/armadillo/waMsgApplication"
+	"github.com/amiruldev20/waSocket/binary/armadillo/waMsgTransport"
 	waProto "github.com/amiruldev20/waSocket/binary/proto"
 	"github.com/amiruldev20/waSocket/types"
 )
@@ -246,6 +249,17 @@ type Message struct {
 	// The raw message struct. This is the raw unmodified data, which means the actual message might
 	// be wrapped in DeviceSentMessage, EphemeralMessage or ViewOnceMessage.
 	RawMessage *waProto.Message
+}
+
+type FBConsumerMessage struct {
+	Info    types.MessageInfo                          // Information about the message like the chat and sender IDs
+	Message *waConsumerApplication.ConsumerApplication // The actual message struct
+
+	// If the message was re-requested from the sender, this is the number of retries it took.
+	RetryCount int
+
+	Transport   *waMsgTransport.MessageTransport     // The first level of wrapping the message was in
+	Application *waMsgApplication.MessageApplication // The second level of wrapping the message was in
 }
 
 // UnwrapRaw fills the Message, IsEphemeral and IsViewOnce fields based on the raw message in the RawMessage field.
