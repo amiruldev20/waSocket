@@ -10,9 +10,9 @@ import (
 	reflect "reflect"
 	sync "sync"
 
-	waAdv "go.mau.fi/whatsmeow/binary/armadillo/waAdv"
-	waCommon "go.mau.fi/whatsmeow/binary/armadillo/waCommon"
-	waMmsRetry "go.mau.fi/whatsmeow/binary/armadillo/waMmsRetry"
+	waAdv "github.com/amiruldev20/waSocket/binary/armadillo/waAdv"
+	waCommon "github.com/amiruldev20/waSocket/binary/armadillo/waCommon"
+	waMmsRetry "github.com/amiruldev20/waSocket/binary/armadillo/waMmsRetry"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 
