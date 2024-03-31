@@ -1,6 +1,6 @@
 syntax = "proto3";
 package WAMsgTransport;
-option go_package = "go.mau.fi/whatsmeow/binary/armadillo/waMsgTransport";
+option go_package = "github.com/amiruldev20/waSocket/binary/armadillo/waMsgTransport";
 
 import "waCommon/WACommon.proto";
 

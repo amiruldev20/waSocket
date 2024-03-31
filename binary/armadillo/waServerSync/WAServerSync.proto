@@ -1,6 +1,6 @@
 syntax = "proto3";
 package WAServerSync;
-option go_package = "go.mau.fi/whatsmeow/binary/armadillo/waServerSync";
+option go_package = "github.com/amiruldev20/waSocket/binary/armadillo/waServerSync";
 
 message SyncdMutation {
 	enum SyncdOperation {

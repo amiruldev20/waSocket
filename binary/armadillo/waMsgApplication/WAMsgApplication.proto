@@ -1,6 +1,6 @@
 syntax = "proto3";
 package WAMsgApplication;
-option go_package = "go.mau.fi/whatsmeow/binary/armadillo/waMsgApplication";
+option go_package = "github.com/amiruldev20/waSocket/binary/armadillo/waMsgApplication";
 
 import "waCommon/WACommon.proto";
 

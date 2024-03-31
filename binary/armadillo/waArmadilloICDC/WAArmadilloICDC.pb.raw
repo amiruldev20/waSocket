@@ -1,5 +1,5 @@
 
-%waArmadilloICDC/WAArmadilloICDC.protoWAArmadilloICDC"Œ
+%waArmadilloICDC/WAArmadilloICDC.protoWAArmadilloICDC"ï¿½
 ICDCIdentityList
 seq (Rseq
 	timestamp (R	timestamp
@@ -7,4 +7,4 @@
 signingDeviceIndex (RsigningDeviceIndex"P
 SignedICDCIdentityList
 details (Rdetails
-	signature (R	signatureB6Z4go.mau.fi/whatsmeow/binary/armadillo/waArmadilloICDCbproto3
+	signature (R	signatureB6Z4github.com/amiruldev20/waSocket/binary/armadillo/waArmadilloICDCbproto3

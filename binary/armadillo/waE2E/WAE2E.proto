@@ -1,6 +1,6 @@
 syntax = "proto3";
 package WAE2E;
-option go_package = "go.mau.fi/whatsmeow/binary/armadillo/waE2E";
+option go_package = "github.com/amiruldev20/waSocket/binary/armadillo/waE2E";
 
 import "waAdv/WAAdv.proto";
 import "waMmsRetry/WAMmsRetry.proto";
