@@ -19,6 +19,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
+	"github.com/amiruldev20/waSocket/binary/armadillo/waMediaTransport"
 	waProto "github.com/amiruldev20/waSocket/binary/proto"
 	"github.com/amiruldev20/waSocket/socket"
 	"github.com/amiruldev20/waSocket/util/cbcutil"
@@ -207,6 +208,10 @@ func (cli *Client) Download(msg DownloadableMessage) ([]byte, error) {
 	}
 }
 
+func (cli *Client) DownloadFB(transport *waMediaTransport.WAMediaTransport_Integral, mediaType MediaType) ([]byte, error) {
+	return cli.DownloadMediaWithPath(transport.GetDirectPath(), transport.GetFileEncSHA256(), transport.GetFileSHA256(), transport.GetMediaKey(), -1, mediaType, mediaTypeToMMSType[mediaType])
+}
+
 // DownloadMediaWithPath downloads an attachment by manually specifying the path and encryption details.
 func (cli *Client) DownloadMediaWithPath(directPath string, encFileHash, fileHash, mediaKey []byte, fileLength int, mediaType MediaType, mmsType string) (data []byte, err error) {
 	var mediaConn *MediaConn
@@ -219,7 +224,12 @@ func (cli *Client) DownloadMediaWithPath(directPath string, encFileHash, fileHas
 	}
 	for i, host := range mediaConn.Hosts {
 		// TODO omit hash for unencrypted media?
-		mediaURL := fmt.Sprintf("https://%s%s&hash=%s&mms-type=%s&__wa-mms=", host.Hostname, directPath, base64.URLEncoding.EncodeToString(encFileHash), mmsType)
+		var mediaURL string
+		if cli.MessengerConfig != nil {
+			mediaURL = fmt.Sprintf("https://%s%s", host.Hostname, directPath)
+		} else {
+			mediaURL = fmt.Sprintf("https://%s%s&hash=%s&mms-type=%s&__wa-mms=", host.Hostname, directPath, base64.URLEncoding.EncodeToString(encFileHash), mmsType)
+		}
 		data, err = cli.downloadAndDecrypt(mediaURL, mediaKey, mediaType, fileLength, encFileHash, fileHash)
 		// TODO there are probably some errors that shouldn't retry
 		if err != nil {
