@@ -5,8 +5,6 @@ import (
 	"github.com/amiruldev20/waSocket/binary/armadillo/waMediaTransport"
 )
 
-type ConsumerApplication_Content_Content = isConsumerApplication_Content_Content
-
 func (*ConsumerApplication) IsMessageApplicationSub() {}
 
 const (

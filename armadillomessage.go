@@ -12,12 +12,10 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/amiruldev20/waSocket/binary/armadillo"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waArmadilloApplication"
 	"github.com/amiruldev20/waSocket/binary/armadillo/waCommon"
 	"github.com/amiruldev20/waSocket/binary/armadillo/waConsumerApplication"
 	"github.com/amiruldev20/waSocket/binary/armadillo/waMsgApplication"
 	"github.com/amiruldev20/waSocket/binary/armadillo/waMsgTransport"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waMultiDevice"
 	"github.com/amiruldev20/waSocket/types"
 	"github.com/amiruldev20/waSocket/types/events"
 )
@@ -66,16 +64,12 @@ func decodeArmadillo(data []byte) (dec DecodedArmadillo, err error) {
 	dec.Transport = &transport
 	if transport.GetPayload() == nil {
 		return
-	} else if transport.GetPayload().GetApplicationPayload().GetVersion() != 2 {
-		// TODO handle future proof behavior tag?
-		return dec, fmt.Errorf("unsupported application payload version: %d", transport.GetPayload().GetApplicationPayload().GetVersion())
 	}
-	var application waMsgApplication.MessageApplication
-	err = proto.Unmarshal(transport.GetPayload().GetApplicationPayload().GetPayload(), &application)
+	application, err := transport.GetPayload().Decode()
 	if err != nil {
 		return dec, fmt.Errorf("failed to unmarshal application: %w", err)
 	}
-	dec.Application = &application
+	dec.Application = application
 	if application.GetPayload() == nil {
 		return
 	}
@@ -92,29 +86,17 @@ func decodeArmadillo(data []byte) (dec DecodedArmadillo, err error) {
 		var subData *waCommon.SubProtocol
 		switch subProtocol := typedContent.SubProtocol.GetSubProtocol().(type) {
 		case *waMsgApplication.MessageApplication_SubProtocolPayload_ConsumerMessage:
-			typedSub := &waConsumerApplication.ConsumerApplication{}
-			dec.Message = typedSub
-			protoMsg = typedSub
-			subData = subProtocol.ConsumerMessage
+			dec.Message, err = subProtocol.Decode()
 		case *waMsgApplication.MessageApplication_SubProtocolPayload_BusinessMessage:
-			subData = subProtocol.BusinessMessage
-			dec.Message = (*armadillo.Unsupported_BusinessApplication)(subData)
+			dec.Message = (*armadillo.Unsupported_BusinessApplication)(subProtocol.BusinessMessage)
 		case *waMsgApplication.MessageApplication_SubProtocolPayload_PaymentMessage:
-			subData = subProtocol.PaymentMessage
-			dec.Message = (*armadillo.Unsupported_PaymentApplication)(subData)
+			dec.Message = (*armadillo.Unsupported_PaymentApplication)(subProtocol.PaymentMessage)
 		case *waMsgApplication.MessageApplication_SubProtocolPayload_MultiDevice:
-			typedSub := &waMultiDevice.MultiDevice{}
-			dec.Message = typedSub
-			protoMsg = typedSub
-			subData = subProtocol.MultiDevice
+			dec.Message, err = subProtocol.Decode()
 		case *waMsgApplication.MessageApplication_SubProtocolPayload_Voip:
-			subData = subProtocol.Voip
-			dec.Message = (*armadillo.Unsupported_Voip)(subData)
+			dec.Message = (*armadillo.Unsupported_Voip)(subProtocol.Voip)
 		case *waMsgApplication.MessageApplication_SubProtocolPayload_Armadillo:
-			typedSub := &waArmadilloApplication.Armadillo{}
-			dec.Message = typedSub
-			protoMsg = typedSub
-			subData = subProtocol.Armadillo
+			dec.Message, err = subProtocol.Decode()
 		default:
 			return dec, fmt.Errorf("unsupported subprotocol type: %T", subProtocol)
 		}
