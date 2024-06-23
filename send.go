@@ -541,7 +541,7 @@ func (cli *Client) sendGroup(ctx context.Context, to, ownID types.JID, id types.
 		if err != nil {
 			return "", nil, fmt.Errorf("failed to get group members: %w", err)*/
 		}
-		participants = []types.JID{ownID}
+		
 	} else {
 		// TODO use context
 		participants, err = cli.getBroadcastListParticipants(to)
