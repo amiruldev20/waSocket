@@ -1,7 +1,13 @@
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 // Package socket implements a subset of the Noise protocol framework on top of websockets as used by WhatsApp.
 //
 // There shouldn't be any need to manually interact with this package.
-// The Client struct in the top-level whatsmeow package handles everything.
+// The Client struct in the top-level waSocket package handles everything.
 package socket
 
 import (

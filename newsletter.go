@@ -1,3 +1,9 @@
+// Copyright (c) 2023 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package waSocket
 
 import (
@@ -69,7 +75,7 @@ func (cli *Client) NewsletterMarkViewed(jid types.JID, serverIDs []types.Message
 // NewsletterSendReaction sends a reaction to a channel message.
 // To remove a reaction sent earlier, set reaction to an empty string.
 //
-// The last parameter is the message ID of the reaction itself. It can be left empty to let whatsmeow generate a random one.
+// The last parameter is the message ID of the reaction itself. It can be left empty to let waSocket generate a random one.
 func (cli *Client) NewsletterSendReaction(jid types.JID, serverID types.MessageServerID, reaction string, messageID types.MessageID) error {
 	if messageID == "" {
 		messageID = cli.GenerateMessageID()

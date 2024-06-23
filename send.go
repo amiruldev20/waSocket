@@ -1,3 +1,9 @@
+// Copyright (c) 2022 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package waSocket
 
 import (
@@ -13,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog"
 	"go.mau.fi/libsignal/groups"
 	"go.mau.fi/libsignal/keys/prekey"
 	"go.mau.fi/libsignal/protocol"
@@ -23,6 +30,7 @@ import (
 
 	waBinary "github.com/amiruldev20/waSocket/binary"
 	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/proto/waE2E"
 	"github.com/amiruldev20/waSocket/types"
 	"github.com/amiruldev20/waSocket/types/events"
 )
@@ -30,21 +38,21 @@ import (
 // GenerateMessageID generates a random string that can be used as a message ID on WhatsApp.
 //
 //	msgID := cli.GenerateMessageID()
-//	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, whatsmeow.SendRequestExtra{ID: msgID})
+//	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, waSocket.SendRequestExtra{ID: msgID})
 func (cli *Client) GenerateMessageID() types.MessageID {
 	if cli.MessengerConfig != nil {
 		return types.MessageID(strconv.FormatInt(GenerateFacebookMessageID(), 10))
 	}
-	data := make([]byte, 64)
+	data := make([]byte, 8, 8+20+16)
 	binary.BigEndian.PutUint64(data, uint64(time.Now().Unix()))
 	ownID := cli.getOwnID()
 	if !ownID.IsEmpty() {
 		data = append(data, []byte(ownID.User)...)
 		data = append(data, []byte("@c.us")...)
 	}
-	data = append(data, random.Bytes(32)...)
+	data = append(data, random.Bytes(16)...)
 	hash := sha256.Sum256(data)
-	return strings.ToUpper(hex.EncodeToString(hash[:32]))
+	return "3EB0" + strings.ToUpper(hex.EncodeToString(hash[:9]))
 }
 
 func GenerateFacebookMessageID() int64 {
@@ -54,12 +62,12 @@ func GenerateFacebookMessageID() int64 {
 
 // GenerateMessageID generates a random string that can be used as a message ID on WhatsApp.
 //
-//	msgID := whatsmeow.GenerateMessageID()
-//	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, whatsmeow.SendRequestExtra{ID: msgID})
+//	msgID := waSocket.GenerateMessageID()
+//	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, waSocket.SendRequestExtra{ID: msgID})
 //
 // Deprecated: WhatsApp web has switched to using a hash of the current timestamp, user id and random bytes. Use Client.GenerateMessageID instead.
 func GenerateMessageID() types.MessageID {
-	return strings.ToUpper(hex.EncodeToString(random.Bytes(32)))
+	return "3EB0" + strings.ToUpper(hex.EncodeToString(random.Bytes(8)))
 }
 
 type MessageDebugTimings struct {
@@ -74,6 +82,24 @@ type MessageDebugTimings struct {
 	Send  time.Duration
 	Resp  time.Duration
 	Retry time.Duration
+}
+
+func (mdt MessageDebugTimings) MarshalZerologObject(evt *zerolog.Event) {
+	evt.Dur("queue", mdt.Queue)
+	evt.Dur("marshal", mdt.Marshal)
+	if mdt.GetParticipants != 0 {
+		evt.Dur("get_participants", mdt.GetParticipants)
+	}
+	evt.Dur("get_devices", mdt.GetDevices)
+	if mdt.GroupEncrypt != 0 {
+		evt.Dur("group_encrypt", mdt.GroupEncrypt)
+	}
+	evt.Dur("peer_encrypt", mdt.PeerEncrypt)
+	evt.Dur("send", mdt.Send)
+	evt.Dur("resp", mdt.Resp)
+	if mdt.Retry != 0 {
+		evt.Dur("retry", mdt.Retry)
+	}
 }
 
 type SendResponse struct {
@@ -98,7 +124,7 @@ type SendResponse struct {
 //
 // When providing optional parameters, add a single instance of this struct as the last parameter:
 //
-//	cli.SendMessage(ctx, to, message, whatsmeow.SendRequestExtra{...})
+//	cli.SendMessage(ctx, to, message, waSocket.SendRequestExtra{...})
 //
 // Trying to add multiple extra parameters will return an error.
 type SendRequestExtra struct {
@@ -106,9 +132,10 @@ type SendRequestExtra struct {
 	ID types.MessageID
 	// Should the message be sent as a peer message (protocol messages to your own devices, e.g. app state key requests)
 	Peer bool
-
+	// A timeout for the send request. Unlike timeouts using the context parameter, this only applies
+	// to the actual response waiting and not preparing/encrypting the message.
+	// Defaults to 75 seconds. The timeout can be disabled by using a negative value.
 	Timeout time.Duration
-
 	// When sending media to newsletters, the Handle field returned by the file upload.
 	MediaHandle string
 }
@@ -158,7 +185,6 @@ func (cli *Client) SendMessage(ctx context.Context, to types.JID, message *waPro
 	if req.Timeout == 0 {
 		req.Timeout = defaultRequestTimeout
 	}
-
 	if len(req.ID) == 0 {
 		req.ID = cli.GenerateMessageID()
 	}
@@ -181,7 +207,7 @@ func (cli *Client) SendMessage(ctx context.Context, to types.JID, message *waPro
 	respChan := cli.waitResponse(req.ID)
 	// Peer message retries aren't implemented yet
 	if !req.Peer {
-		cli.addRecentMessage(to, req.ID, message)
+		cli.addRecentMessage(to, req.ID, message, nil)
 	}
 	if message.GetMessageContextInfo().GetMessageSecret() != nil {
 		err = cli.Store.MsgSecrets.PutMessageSecret(to, ownID, req.ID, message.GetMessageContextInfo().GetMessageSecret())
@@ -271,8 +297,8 @@ func (cli *Client) RevokeMessage(chat types.JID, id types.MessageID) (SendRespon
 func (cli *Client) BuildMessageKey(chat, sender types.JID, id types.MessageID) *waProto.MessageKey {
 	key := &waProto.MessageKey{
 		FromMe:    proto.Bool(true),
-		Id:        proto.String(id),
-		RemoteJid: proto.String(chat.String()),
+		ID:        proto.String(id),
+		RemoteJID: proto.String(chat.String()),
 	}
 	if !sender.IsEmpty() && sender.User != cli.getOwnID().User {
 		key.FromMe = proto.Bool(false)
@@ -313,7 +339,7 @@ func (cli *Client) BuildReaction(chat, sender types.JID, id types.MessageID, rea
 		ReactionMessage: &waProto.ReactionMessage{
 			Key:               cli.BuildMessageKey(chat, sender, id),
 			Text:              proto.String(reaction),
-			SenderTimestampMs: proto.Int64(time.Now().UnixMilli()),
+			SenderTimestampMS: proto.Int64(time.Now().UnixMilli()),
 		},
 	}
 }
@@ -321,7 +347,7 @@ func (cli *Client) BuildReaction(chat, sender types.JID, id types.MessageID, rea
 // BuildUnavailableMessageRequest builds a message to request the user's primary device to send
 // the copy of a message that this client was unable to decrypt.
 //
-// The built message can be sent using Client.SendMessage, but you must pass whatsmeow.SendRequestExtra{Peer: true} as the last parameter.
+// The built message can be sent using Client.SendMessage, but you must pass waSocket.SendRequestExtra{Peer: true} as the last parameter.
 // The full response will come as a ProtocolMessage with type `PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE`.
 // The response events will also be dispatched as normal *events.Message's with UnavailableRequestID set to the request message ID.
 func (cli *Client) BuildUnavailableMessageRequest(chat, sender types.JID, id string) *waProto.Message {
@@ -340,7 +366,7 @@ func (cli *Client) BuildUnavailableMessageRequest(chat, sender types.JID, id str
 
 // BuildHistorySyncRequest builds a message to request additional history from the user's primary device.
 //
-// The built message can be sent using Client.SendMessage, but you must pass whatsmeow.SendRequestExtra{Peer: true} as the last parameter.
+// The built message can be sent using Client.SendMessage, but you must pass waSocket.SendRequestExtra{Peer: true} as the last parameter.
 // The response will come as an *events.HistorySync with type `ON_DEMAND`.
 //
 // The response will contain to `count` messages immediately before the given message.
@@ -352,11 +378,11 @@ func (cli *Client) BuildHistorySyncRequest(lastKnownMessageInfo *types.MessageIn
 			PeerDataOperationRequestMessage: &waProto.PeerDataOperationRequestMessage{
 				PeerDataOperationRequestType: waProto.PeerDataOperationRequestType_HISTORY_SYNC_ON_DEMAND.Enum(),
 				HistorySyncOnDemandRequest: &waProto.PeerDataOperationRequestMessage_HistorySyncOnDemandRequest{
-					ChatJid:              proto.String(lastKnownMessageInfo.Chat.String()),
-					OldestMsgId:          proto.String(lastKnownMessageInfo.ID),
+					ChatJID:              proto.String(lastKnownMessageInfo.Chat.String()),
+					OldestMsgID:          proto.String(lastKnownMessageInfo.ID),
 					OldestMsgFromMe:      proto.Bool(lastKnownMessageInfo.IsFromMe),
 					OnDemandMsgCount:     proto.Int32(int32(count)),
-					OldestMsgTimestampMs: proto.Int64(lastKnownMessageInfo.Timestamp.UnixMilli()),
+					OldestMsgTimestampMS: proto.Int64(lastKnownMessageInfo.Timestamp.UnixMilli()),
 				},
 			},
 		},
@@ -379,12 +405,12 @@ func (cli *Client) BuildEdit(chat types.JID, id types.MessageID, newContent *waP
 				ProtocolMessage: &waProto.ProtocolMessage{
 					Key: &waProto.MessageKey{
 						FromMe:    proto.Bool(true),
-						Id:        proto.String(id),
-						RemoteJid: proto.String(chat.String()),
+						ID:        proto.String(id),
+						RemoteJID: proto.String(chat.String()),
 					},
 					Type:          waProto.ProtocolMessage_MESSAGE_EDIT.Enum(),
 					EditedMessage: newContent,
-					TimestampMs:   proto.Int64(time.Now().UnixMilli()),
+					TimestampMS:   proto.Int64(time.Now().UnixMilli()),
 				},
 			},
 		},
@@ -513,8 +539,8 @@ func (cli *Client) sendGroup(ctx context.Context, to, ownID types.JID, id types.
 	if to.Server == types.GroupServer {
 		/*participants, err = cli.getGroupMembers(ctx, to)
 		if err != nil {
-			return "", nil, fmt.Errorf("failed to get group members: %w", err)
-		}*/
+			return "", nil, fmt.Errorf("failed to get group members: %w", err)*/
+		}
 		participants = []types.JID{ownID}
 	} else {
 		// TODO use context
@@ -540,7 +566,7 @@ func (cli *Client) sendGroup(ctx context.Context, to, ownID types.JID, id types.
 	}
 	skdMessage := &waProto.Message{
 		SenderKeyDistributionMessage: &waProto.SenderKeyDistributionMessage{
-			GroupId:                             proto.String(to.String()),
+			GroupID:                             proto.String(to.String()),
 			AxolotlSenderKeyDistributionMessage: signalSKDMessage.Serialize(),
 		},
 	}
@@ -624,6 +650,10 @@ func getTypeFromMessage(msg *waProto.Message) string {
 		return getTypeFromMessage(msg.ViewOnceMessage.Message)
 	case msg.ViewOnceMessageV2 != nil:
 		return getTypeFromMessage(msg.ViewOnceMessageV2.Message)
+	case msg.ViewOnceMessageV2Extension != nil:
+		return getTypeFromMessage(msg.ViewOnceMessageV2Extension.Message)
+	case msg.LottieStickerMessage != nil:
+		return getTypeFromMessage(msg.LottieStickerMessage.Message)
 	case msg.EphemeralMessage != nil:
 		return getTypeFromMessage(msg.EphemeralMessage.Message)
 	case msg.DocumentWithCaptionMessage != nil:
@@ -647,6 +677,10 @@ func getMediaTypeFromMessage(msg *waProto.Message) string {
 		return getMediaTypeFromMessage(msg.ViewOnceMessage.Message)
 	case msg.ViewOnceMessageV2 != nil:
 		return getMediaTypeFromMessage(msg.ViewOnceMessageV2.Message)
+	case msg.ViewOnceMessageV2Extension != nil:
+		return getMediaTypeFromMessage(msg.ViewOnceMessageV2Extension.Message)
+	case msg.LottieStickerMessage != nil:
+		return getMediaTypeFromMessage(msg.LottieStickerMessage.Message)
 	case msg.EphemeralMessage != nil:
 		return getMediaTypeFromMessage(msg.EphemeralMessage.Message)
 	case msg.DocumentWithCaptionMessage != nil:
@@ -660,7 +694,7 @@ func getMediaTypeFromMessage(msg *waProto.Message) string {
 	case msg.DocumentMessage != nil:
 		return "document"
 	case msg.AudioMessage != nil:
-		if msg.AudioMessage.GetPtt() {
+		if msg.AudioMessage.GetPTT() {
 			return "ptt"
 		} else {
 			return "audio"
@@ -728,7 +762,7 @@ func getButtonAttributes(msg *waProto.Message) waBinary.Attrs {
 	case msg.ListMessage != nil:
 		return waBinary.Attrs{
 			"v":    "2",
-			"type": strings.ToLower(waProto.ListMessage_ListType_name[int32(msg.ListMessage.GetListType())]),
+			"type": strings.ToLower(waE2E.ListMessage_ListType_name[int32(msg.ListMessage.GetListType())]),
 		}
 	default:
 		return waBinary.Attrs{}
@@ -879,7 +913,7 @@ func marshalMessage(to types.JID, message *waProto.Message) (plaintext, dsmPlain
 	if to.Server != types.GroupServer && to.Server != types.NewsletterServer {
 		dsmPlaintext, err = proto.Marshal(&waProto.Message{
 			DeviceSentMessage: &waProto.DeviceSentMessage{
-				DestinationJid: proto.String(to.String()),
+				DestinationJID: proto.String(to.String()),
 				Message:        message,
 			},
 		})

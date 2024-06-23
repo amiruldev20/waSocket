@@ -1,5 +1,8 @@
-// 2023 © Whatsmeow
-// Redeveloped by Amirul Dev
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 package waSocket
 
@@ -8,7 +11,6 @@ import (
 	"math/rand"
 	"time"
 
-	waBinary "github.com/amiruldev20/waSocket/binary"
 	"github.com/amiruldev20/waSocket/types"
 	"github.com/amiruldev20/waSocket/types/events"
 )
@@ -64,7 +66,6 @@ func (cli *Client) sendKeepAlive(ctx context.Context) (isSuccess, shouldContinue
 		Namespace: "w:p",
 		Type:      "get",
 		To:        types.ServerJID,
-		Content:   []waBinary.Node{{Tag: "ping"}},
 	})
 	if err != nil {
 		cli.Log.Warnf("Failed to send keepalive: %v", err)

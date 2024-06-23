@@ -1,8 +1,13 @@
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package waSocket
 
 import (
 	"fmt"
-	"sync/atomic"
 
 	waBinary "github.com/amiruldev20/waSocket/binary"
 	"github.com/amiruldev20/waSocket/types"
@@ -60,9 +65,9 @@ func (cli *Client) SendPresence(state types.Presence) error {
 		return ErrNoPushName
 	}
 	if state == types.PresenceAvailable {
-		atomic.CompareAndSwapUint32(&cli.sendActiveReceipts, 0, 1)
+		cli.sendActiveReceipts.CompareAndSwap(0, 1)
 	} else {
-		atomic.CompareAndSwapUint32(&cli.sendActiveReceipts, 1, 0)
+		cli.sendActiveReceipts.CompareAndSwap(1, 0)
 	}
 	return cli.sendNode(waBinary.Node{
 		Tag: "presence",

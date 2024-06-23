@@ -1,10 +1,0 @@
-
-%waArmadilloICDC/WAArmadilloICDC.protoWAArmadilloICDC"�
-ICDCIdentityList
-seq (Rseq
-	timestamp (R	timestamp
-devices (Rdevices.
-signingDeviceIndex (RsigningDeviceIndex"P
-SignedICDCIdentityList
-details (Rdetails
-	signature (R	signatureB6Z4github.com/amiruldev20/waSocket/binary/armadillo/waArmadilloICDCbproto3

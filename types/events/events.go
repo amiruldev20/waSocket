@@ -1,15 +1,22 @@
-// Package events contains all the events that whatsmeow.Client emits to functions registered with AddEventHandler.
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+// Package events contains all the events that waSocket.Client emits to functions registered with AddEventHandler.
 package events
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	waBinary "github.com/amiruldev20/waSocket/binary"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waConsumerApplication"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waMsgApplication"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waMsgTransport"
 	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	armadillo "github.com/amiruldev20/waSocket/proto"
+	"github.com/amiruldev20/waSocket/proto/waMsgApplication"
+	"github.com/amiruldev20/waSocket/proto/waMsgTransport"
 	"github.com/amiruldev20/waSocket/types"
 )
 
@@ -65,6 +72,22 @@ type KeepAliveTimeout struct {
 // KeepAliveRestored is emitted if the keepalive pings start working again after some KeepAliveTimeout events.
 // Note that if the websocket disconnects before the pings start working, this event will not be emitted.
 type KeepAliveRestored struct{}
+
+// PermanentDisconnect is a class of events emitted when the client will not auto-reconnect by default.
+type PermanentDisconnect interface {
+	PermanentDisconnectDescription() string
+}
+
+func (l *LoggedOut) PermanentDisconnectDescription() string     { return l.Reason.String() }
+func (*StreamReplaced) PermanentDisconnectDescription() string  { return "stream replaced" }
+func (*ClientOutdated) PermanentDisconnectDescription() string  { return "client outdated" }
+func (*CATRefreshError) PermanentDisconnectDescription() string { return "CAT refresh failed" }
+func (tb *TemporaryBan) PermanentDisconnectDescription() string {
+	return fmt.Sprintf("temporarily banned: %s", tb.String())
+}
+func (cf *ConnectFailure) PermanentDisconnectDescription() string {
+	return fmt.Sprintf("connect failure: %s", cf.Reason.String())
+}
 
 // LoggedOut is emitted when the client has been unpaired from the phone.
 //
@@ -139,6 +162,10 @@ const (
 	ConnectFailureClientOutdated ConnectFailureReason = 405
 	ConnectFailureBadUserAgent   ConnectFailureReason = 409
 
+	ConnectFailureCATExpired ConnectFailureReason = 413
+	ConnectFailureCATInvalid ConnectFailureReason = 414
+	ConnectFailureNotFound   ConnectFailureReason = 415
+
 	ConnectFailureInternalServerError ConnectFailureReason = 500
 	ConnectFailureExperimental        ConnectFailureReason = 501
 	ConnectFailureServiceUnavailable  ConnectFailureReason = 503
@@ -151,11 +178,17 @@ var connectFailureReasonMessage = map[ConnectFailureReason]string{
 	ConnectFailureUnknownLogout:  "logged out for unknown reason",
 	ConnectFailureClientOutdated: "client is out of date",
 	ConnectFailureBadUserAgent:   "client user agent was rejected",
+	ConnectFailureCATExpired:     "messenger crypto auth token has expired",
+	ConnectFailureCATInvalid:     "messenger crypto auth token is invalid",
 }
 
 // IsLoggedOut returns true if the client should delete session data due to this connect failure.
 func (cfr ConnectFailureReason) IsLoggedOut() bool {
 	return cfr == ConnectFailureLoggedOut || cfr == ConnectFailureMainDeviceGone || cfr == ConnectFailureUnknownLogout
+}
+
+func (cfr ConnectFailureReason) NumberString() string {
+	return strconv.Itoa(int(cfr))
 }
 
 // String returns the reason code and a short human-readable description of the error.
@@ -178,6 +211,10 @@ type ConnectFailure struct {
 
 // ClientOutdated is emitted when the WhatsApp server rejects the connection with the ConnectFailureClientOutdated code.
 type ClientOutdated struct{}
+
+type CATRefreshError struct {
+	Error error
+}
 
 // StreamError is emitted when the WhatsApp server sends a <stream:error> node with an unknown code.
 //
@@ -232,9 +269,11 @@ type Message struct {
 	Message *waProto.Message  // The actual message struct
 
 	IsEphemeral           bool // True if the message was unwrapped from an EphemeralMessage
-	IsViewOnce            bool // True if the message was unwrapped from a ViewOnceMessage or ViewOnceMessageV2
-	IsViewOnceV2          bool // True if the message was unwrapped from a ViewOnceMessage
+	IsViewOnce            bool // True if the message was unwrapped from a ViewOnceMessage, ViewOnceMessageV2 or ViewOnceMessageV2Extension
+	IsViewOnceV2          bool // True if the message was unwrapped from a ViewOnceMessageV2 or ViewOnceMessageV2Extension
+	IsViewOnceV2Extension bool // True if the message was unwrapped from a ViewOnceMessageV2Extension
 	IsDocumentWithCaption bool // True if the message was unwrapped from a DocumentWithCaptionMessage
+	IsLottieSticker       bool // True if the message was unwrapped from a LottieStickerMessage
 	IsEdit                bool // True if the message was unwrapped from an EditedMessage
 
 	// If this event was parsed from a WebMessageInfo (i.e. from a history sync or unavailable message request), the source data is here.
@@ -251,9 +290,9 @@ type Message struct {
 	RawMessage *waProto.Message
 }
 
-type FBConsumerMessage struct {
-	Info    types.MessageInfo                          // Information about the message like the chat and sender IDs
-	Message *waConsumerApplication.ConsumerApplication // The actual message struct
+type FBMessage struct {
+	Info    types.MessageInfo               // Information about the message like the chat and sender IDs
+	Message armadillo.MessageApplicationSub // The actual message struct
 
 	// If the message was re-requested from the sender, this is the number of retries it took.
 	RetryCount int
@@ -267,7 +306,7 @@ func (evt *Message) UnwrapRaw() *Message {
 	evt.Message = evt.RawMessage
 	if evt.Message.GetDeviceSentMessage().GetMessage() != nil {
 		evt.Info.DeviceSentMeta = &types.DeviceSentMeta{
-			DestinationJID: evt.Message.GetDeviceSentMessage().GetDestinationJid(),
+			DestinationJID: evt.Message.GetDeviceSentMessage().GetDestinationJID(),
 			Phash:          evt.Message.GetDeviceSentMessage().GetPhash(),
 		}
 		evt.Message = evt.Message.GetDeviceSentMessage().GetMessage()
@@ -285,6 +324,16 @@ func (evt *Message) UnwrapRaw() *Message {
 		evt.IsViewOnce = true
 		evt.IsViewOnceV2 = true
 	}
+	if evt.Message.GetViewOnceMessageV2Extension().GetMessage() != nil {
+		evt.Message = evt.Message.GetViewOnceMessageV2Extension().GetMessage()
+		evt.IsViewOnce = true
+		evt.IsViewOnceV2 = true
+		evt.IsViewOnceV2Extension = true
+	}
+	if evt.Message.GetLottieStickerMessage().GetMessage() != nil {
+		evt.Message = evt.Message.GetLottieStickerMessage().GetMessage()
+		evt.IsLottieSticker = true
+	}
 	if evt.Message.GetDocumentWithCaptionMessage().GetMessage() != nil {
 		evt.Message = evt.Message.GetDocumentWithCaptionMessage().GetMessage()
 		evt.IsDocumentWithCaption = true
@@ -296,7 +345,7 @@ func (evt *Message) UnwrapRaw() *Message {
 	return evt
 }
 
-// ReceiptType represents the type of a Receipt event.
+// Deprecated: use types.ReceiptType directly
 type ReceiptType = types.ReceiptType
 
 // Deprecated: use types.ReceiptType* constants directly

@@ -1,10 +1,12 @@
-// 2023 © Whatsmeow
-// Redeveloped by Amirul Dev
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 package waSocket
 
 import (
-	"sync/atomic"
 	"time"
 
 	waBinary "github.com/amiruldev20/waSocket/binary"
@@ -14,7 +16,7 @@ import (
 )
 
 func (cli *Client) handleStreamError(node *waBinary.Node) {
-	atomic.StoreUint32(&cli.isLoggedIn, 0)
+	cli.isLoggedIn.Store(false)
 	cli.clearResponseWaiters(node)
 	code, _ := node.Attrs["code"].(string)
 	conflict, _ := node.GetOptionalChildByTag("conflict")
@@ -26,7 +28,7 @@ func (cli *Client) handleStreamError(node *waBinary.Node) {
 			cli.Disconnect()
 			err := cli.Connect()
 			if err != nil {
-				cli.Log.Errorf("Failed to reconnect after 515 code:", err)
+				cli.Log.Errorf("Failed to reconnect after 515 code: %v", err)
 			}
 		}()
 	case code == "401" && conflictType == "device_removed":
@@ -45,6 +47,16 @@ func (cli *Client) handleStreamError(node *waBinary.Node) {
 		// This seems to happen when the server wants to restart or something.
 		// The disconnection will be emitted as an events.Disconnected and then the auto-reconnect will do its thing.
 		cli.Log.Warnf("Got 503 stream error, assuming automatic reconnect will handle it")
+	case cli.RefreshCAT != nil && (code == events.ConnectFailureCATInvalid.NumberString() || code == events.ConnectFailureCATExpired.NumberString()):
+		cli.Log.Infof("Got %s stream error, refreshing CAT before reconnecting...", code)
+		cli.socketLock.RLock()
+		defer cli.socketLock.RUnlock()
+		err := cli.RefreshCAT()
+		if err != nil {
+			cli.Log.Errorf("Failed to refresh CAT: %v", err)
+			cli.expectDisconnect()
+			go cli.dispatchEvent(&events.CATRefreshError{Error: err})
+		}
 	default:
 		cli.Log.Errorf("Unknown stream error: %s", node.XMLString())
 		go cli.dispatchEvent(&events.StreamError{Code: code, Raw: node})
@@ -86,6 +98,10 @@ func (cli *Client) handleConnectFailure(node *waBinary.Node) {
 		willAutoReconnect = false
 	case reason == events.ConnectFailureServiceUnavailable:
 		// Auto-reconnect for 503s
+	case reason == events.ConnectFailureCATInvalid || reason == events.ConnectFailureCATExpired:
+		// Auto-reconnect when rotating CAT, lock socket to ensure refresh goes through before reconnect
+		cli.socketLock.RLock()
+		defer cli.socketLock.RUnlock()
 	case reason == 500 && message == "biz vname fetch error":
 		// These happen for business accounts randomly, also auto-reconnect
 	}
@@ -112,6 +128,14 @@ func (cli *Client) handleConnectFailure(node *waBinary.Node) {
 	} else if reason == events.ConnectFailureClientOutdated {
 		cli.Log.Errorf("Client outdated (405) connect failure (client version: %s)", store.GetWAVersion().String())
 		go cli.dispatchEvent(&events.ClientOutdated{})
+	} else if reason == events.ConnectFailureCATInvalid || reason == events.ConnectFailureCATExpired {
+		cli.Log.Infof("Got %d/%s connect failure, refreshing CAT before reconnecting...", int(reason), message)
+		err := cli.RefreshCAT()
+		if err != nil {
+			cli.Log.Errorf("Failed to refresh CAT: %v", err)
+			cli.expectDisconnect()
+			go cli.dispatchEvent(&events.CATRefreshError{Error: err})
+		}
 	} else if willAutoReconnect {
 		cli.Log.Warnf("Got %d/%s connect failure, assuming automatic reconnect will handle it", int(reason), message)
 	} else {
@@ -124,7 +148,7 @@ func (cli *Client) handleConnectSuccess(node *waBinary.Node) {
 	cli.Log.Infof("Successfully authenticated")
 	cli.LastSuccessfulConnect = time.Now()
 	cli.AutoReconnectErrors = 0
-	atomic.StoreUint32(&cli.isLoggedIn, 1)
+	cli.isLoggedIn.Store(true)
 	go func() {
 		if dbCount, err := cli.Store.PreKeys.UploadedPreKeyCount(); err != nil {
 			cli.Log.Errorf("Failed to get number of prekeys in database: %v", err)
@@ -150,7 +174,7 @@ func (cli *Client) handleConnectSuccess(node *waBinary.Node) {
 // SetPassive tells the WhatsApp server whether this device is passive or not.
 //
 // This seems to mostly affect whether the device receives certain events.
-// By default, whatsmeow will automatically do SetPassive(false) after connecting.
+// By default, waSocket will automatically do SetPassive(false) after connecting.
 func (cli *Client) SetPassive(passive bool) error {
 	tag := "active"
 	if passive {

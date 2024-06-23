@@ -1,8 +1,13 @@
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package waSocket
 
 import (
 	"fmt"
-	"sync/atomic"
 	"time"
 
 	waBinary "github.com/amiruldev20/waSocket/binary"
@@ -121,6 +126,9 @@ func (cli *Client) sendAck(node *waBinary.Node) {
 //
 // You can mark multiple messages as read at the same time, but only if the messages were sent by the same user.
 // To mark messages by different users as read, you must call MarkRead multiple times (once for each user).
+//
+// To mark a voice message as played, specify types.ReceiptTypePlayed as the last parameter.
+// Providing more than one receipt type will panic: the parameter is only a vararg for backwards compatibility.
 func (cli *Client) MarkRead(ids []types.MessageID, timestamp time.Time, chat, sender types.JID, receiptTypeExtra ...types.ReceiptType) error {
 	if len(ids) == 0 {
 		return fmt.Errorf("no message IDs specified")
@@ -181,9 +189,9 @@ func (cli *Client) MarkRead(ids []types.MessageID, timestamp time.Time, chat, se
 // receipts will act like the client is offline until SendPresence is called again.
 func (cli *Client) SetForceActiveDeliveryReceipts(active bool) {
 	if active {
-		atomic.StoreUint32(&cli.sendActiveReceipts, 2)
+		cli.sendActiveReceipts.Store(2)
 	} else {
-		atomic.StoreUint32(&cli.sendActiveReceipts, 0)
+		cli.sendActiveReceipts.Store(0)
 	}
 }
 
@@ -193,7 +201,7 @@ func (cli *Client) sendMessageReceipt(info *types.MessageInfo) {
 	}
 	if info.IsFromMe {
 		attrs["type"] = string(types.ReceiptTypeSender)
-	} else if atomic.LoadUint32(&cli.sendActiveReceipts) == 0 {
+	} else if cli.sendActiveReceipts.Load() == 0 {
 		attrs["type"] = string(types.ReceiptTypeInactive)
 	}
 	attrs["to"] = info.Chat

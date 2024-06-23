@@ -11,11 +11,10 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/amiruldev20/waSocket/binary/armadillo"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waCommon"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waConsumerApplication"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waMsgApplication"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waMsgTransport"
+	armadillo "github.com/amiruldev20/waSocket/proto"
+	"github.com/amiruldev20/waSocket/proto/waCommon"
+	"github.com/amiruldev20/waSocket/proto/waMsgApplication"
+	"github.com/amiruldev20/waSocket/proto/waMsgTransport"
 	"github.com/amiruldev20/waSocket/types"
 	"github.com/amiruldev20/waSocket/types/events"
 )
@@ -26,6 +25,8 @@ func (cli *Client) handleDecryptedArmadillo(info *types.MessageInfo, decrypted [
 		cli.Log.Warnf("Failed to decode armadillo message from %s: %v", info.SourceString(), err)
 		return false
 	}
+	dec.Info = *info
+	dec.RetryCount = retryCount
 	if dec.Transport.GetProtocol().GetAncillary().GetSkdm() != nil {
 		if !info.IsGroup {
 			cli.Log.Warnf("Got sender key distribution message in non-group chat from %s", info.Sender)
@@ -34,28 +35,13 @@ func (cli *Client) handleDecryptedArmadillo(info *types.MessageInfo, decrypted [
 			cli.handleSenderKeyDistributionMessage(info.Chat, info.Sender, skdm.AxolotlSenderKeyDistributionMessage)
 		}
 	}
-	switch evtData := dec.Message.(type) {
-	case *waConsumerApplication.ConsumerApplication:
-		evt := &events.FBConsumerMessage{
-			Info:        *info,
-			Message:     evtData,
-			RetryCount:  retryCount,
-			Transport:   dec.Transport,
-			Application: dec.Application,
-		}
-		cli.dispatchEvent(evt)
-		// TODO dispatch other events?
+	if dec.Message != nil {
+		cli.dispatchEvent(&dec)
 	}
 	return true
 }
 
-type DecodedArmadillo struct {
-	Transport   *waMsgTransport.MessageTransport
-	Application *waMsgApplication.MessageApplication
-	Message     armadillo.MessageApplicationSub
-}
-
-func decodeArmadillo(data []byte) (dec DecodedArmadillo, err error) {
+func decodeArmadillo(data []byte) (dec events.FBMessage, err error) {
 	var transport waMsgTransport.MessageTransport
 	err = proto.Unmarshal(data, &transport)
 	if err != nil {

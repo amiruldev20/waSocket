@@ -1,5 +1,8 @@
-// 2023 © Whatsmeow
-// Redeveloped by Amirul Dev
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 package waSocket
 
@@ -19,8 +22,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"github.com/amiruldev20/waSocket/binary/armadillo/waMediaTransport"
 	waProto "github.com/amiruldev20/waSocket/binary/proto"
+	"github.com/amiruldev20/waSocket/proto/waMediaTransport"
 	"github.com/amiruldev20/waSocket/socket"
 	"github.com/amiruldev20/waSocket/util/cbcutil"
 	"github.com/amiruldev20/waSocket/util/hkdfutil"
@@ -50,8 +53,8 @@ type DownloadableMessage interface {
 	proto.Message
 	GetDirectPath() string
 	GetMediaKey() []byte
-	GetFileSha256() []byte
-	GetFileEncSha256() []byte
+	GetFileSHA256() []byte
+	GetFileEncSHA256() []byte
 }
 
 // DownloadableThumbnail represents a protobuf message that contains a thumbnail attachment.
@@ -60,8 +63,8 @@ type DownloadableMessage interface {
 type DownloadableThumbnail interface {
 	proto.Message
 	GetThumbnailDirectPath() string
-	GetThumbnailSha256() []byte
-	GetThumbnailEncSha256() []byte
+	GetThumbnailSHA256() []byte
+	GetThumbnailEncSHA256() []byte
 	GetMediaKey() []byte
 }
 
@@ -164,7 +167,7 @@ func (cli *Client) DownloadThumbnail(msg DownloadableThumbnail) ([]byte, error) 
 	if !ok {
 		return nil, fmt.Errorf("%w '%s'", ErrUnknownMediaType, string(msg.ProtoReflect().Descriptor().Name()))
 	} else if len(msg.GetThumbnailDirectPath()) > 0 {
-		return cli.DownloadMediaWithPath(msg.GetThumbnailDirectPath(), msg.GetThumbnailEncSha256(), msg.GetThumbnailSha256(), msg.GetMediaKey(), -1, mediaType, mediaTypeToMMSType[mediaType])
+		return cli.DownloadMediaWithPath(msg.GetThumbnailDirectPath(), msg.GetThumbnailEncSHA256(), msg.GetThumbnailSHA256(), msg.GetMediaKey(), -1, mediaType, mediaTypeToMMSType[mediaType])
 	} else {
 		return nil, ErrNoURLPresent
 	}
@@ -197,9 +200,9 @@ func (cli *Client) Download(msg DownloadableMessage) ([]byte, error) {
 		isWebWhatsappNetURL = strings.HasPrefix(url, "https://web.whatsapp.net")
 	}
 	if len(url) > 0 && !isWebWhatsappNetURL {
-		return cli.downloadAndDecrypt(url, msg.GetMediaKey(), mediaType, getSize(msg), msg.GetFileEncSha256(), msg.GetFileSha256())
+		return cli.downloadAndDecrypt(url, msg.GetMediaKey(), mediaType, getSize(msg), msg.GetFileEncSHA256(), msg.GetFileSHA256())
 	} else if len(msg.GetDirectPath()) > 0 {
-		return cli.DownloadMediaWithPath(msg.GetDirectPath(), msg.GetFileEncSha256(), msg.GetFileSha256(), msg.GetMediaKey(), getSize(msg), mediaType, mediaTypeToMMSType[mediaType])
+		return cli.DownloadMediaWithPath(msg.GetDirectPath(), msg.GetFileEncSHA256(), msg.GetFileSHA256(), msg.GetMediaKey(), getSize(msg), mediaType, mediaTypeToMMSType[mediaType])
 	} else {
 		if isWebWhatsappNetURL {
 			cli.Log.Warnf("Got a media message with a web.whatsapp.net URL (%s) and no direct path", url)
@@ -224,12 +227,7 @@ func (cli *Client) DownloadMediaWithPath(directPath string, encFileHash, fileHas
 	}
 	for i, host := range mediaConn.Hosts {
 		// TODO omit hash for unencrypted media?
-		var mediaURL string
-		if cli.MessengerConfig != nil {
-			mediaURL = fmt.Sprintf("https://%s%s", host.Hostname, directPath)
-		} else {
-			mediaURL = fmt.Sprintf("https://%s%s&hash=%s&mms-type=%s&__wa-mms=", host.Hostname, directPath, base64.URLEncoding.EncodeToString(encFileHash), mmsType)
-		}
+		mediaURL := fmt.Sprintf("https://%s%s&hash=%s&mms-type=%s&__wa-mms=", host.Hostname, directPath, base64.URLEncoding.EncodeToString(encFileHash), mmsType)
 		data, err = cli.downloadAndDecrypt(mediaURL, mediaKey, mediaType, fileLength, encFileHash, fileHash)
 		if err == nil {
 			return
@@ -242,12 +240,12 @@ func (cli *Client) DownloadMediaWithPath(directPath string, encFileHash, fileHas
 	return
 }
 
-func (cli *Client) downloadAndDecrypt(url string, mediaKey []byte, appInfo MediaType, fileLength int, fileEncSha256, fileSha256 []byte) (data []byte, err error) {
+func (cli *Client) downloadAndDecrypt(url string, mediaKey []byte, appInfo MediaType, fileLength int, fileEncSHA256, fileSHA256 []byte) (data []byte, err error) {
 	iv, cipherKey, macKey, _ := getMediaKeys(mediaKey, appInfo)
 	var ciphertext, mac []byte
-	if ciphertext, mac, err = cli.downloadPossiblyEncryptedMediaWithRetries(url, fileEncSha256); err != nil {
+	if ciphertext, mac, err = cli.downloadPossiblyEncryptedMediaWithRetries(url, fileEncSHA256); err != nil {
 
-	} else if mediaKey == nil && fileEncSha256 == nil && mac == nil {
+	} else if mediaKey == nil && fileEncSHA256 == nil && mac == nil {
 		// Unencrypted media, just return the downloaded data
 		data = ciphertext
 	} else if err = validateMedia(iv, ciphertext, macKey, mac); err != nil {
@@ -256,7 +254,7 @@ func (cli *Client) downloadAndDecrypt(url string, mediaKey []byte, appInfo Media
 		err = fmt.Errorf("failed to decrypt file: %w", err)
 	} else if fileLength >= 0 && len(data) != fileLength {
 		err = fmt.Errorf("%w: expected %d, got %d", ErrFileLengthMismatch, fileLength, len(data))
-	} else if len(fileSha256) == 32 && sha256.Sum256(data) != *(*[32]byte)(fileSha256) {
+	} else if len(fileSHA256) == 32 && sha256.Sum256(data) != *(*[32]byte)(fileSHA256) {
 		err = ErrInvalidMediaSHA256
 	}
 	return
@@ -271,6 +269,7 @@ func shouldRetryMediaDownload(err error) bool {
 	var netErr net.Error
 	var httpErr DownloadHTTPError
 	return errors.As(err, &netErr) ||
+		strings.HasPrefix(err.Error(), "stream error:") || // hacky check for http2 errors
 		(errors.As(err, &httpErr) && retryafter.Should(httpErr.StatusCode, true))
 }
 

@@ -1,10 +1,15 @@
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package waSocket
 
 import (
 	"context"
 	"fmt"
 	"strconv"
-	"sync/atomic"
 	"time"
 
 	waBinary "github.com/amiruldev20/waSocket/binary"
@@ -12,7 +17,7 @@ import (
 )
 
 func (cli *Client) generateRequestID() string {
-	return cli.uniqueID + strconv.FormatUint(uint64(atomic.AddUint32(&cli.idCounter, 1)), 10)
+	return cli.uniqueID + strconv.FormatUint(cli.idCounter.Add(1), 10)
 }
 
 var xmlStreamEndNode = &waBinary.Node{Tag: "xmlstreamend"}

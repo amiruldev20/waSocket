@@ -1,3 +1,9 @@
+// Copyright (c) 2022 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package types
 
 import (
@@ -138,4 +144,29 @@ type StatusPrivacy struct {
 type Blocklist struct {
 	DHash string // TODO is this just a timestamp?
 	JIDs  []JID
+}
+
+// BusinessHoursConfig contains business operating hours of a WhatsApp business.
+type BusinessHoursConfig struct {
+	DayOfWeek string
+	Mode      string
+	OpenTime  string
+	CloseTime string
+}
+
+// Category contains a WhatsApp business category.
+type Category struct {
+	ID   string
+	Name string
+}
+
+// BusinessProfile contains the profile information of a WhatsApp business.
+type BusinessProfile struct {
+	JID                   JID
+	Address               string
+	Email                 string
+	Categories            []Category
+	ProfileOptions        map[string]string
+	BusinessHoursTimeZone string
+	BusinessHours         []BusinessHoursConfig
 }

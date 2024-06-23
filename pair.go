@@ -1,3 +1,9 @@
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package waSocket
 
 import (
@@ -101,7 +107,7 @@ func (cli *Client) handlePair(deviceIdentityBytes []byte, reqID, businessName, p
 
 	h := hmac.New(sha256.New, cli.Store.AdvSecretKey)
 	h.Write(deviceIdentityContainer.Details)
-	if !bytes.Equal(h.Sum(nil), deviceIdentityContainer.Hmac) {
+	if !bytes.Equal(h.Sum(nil), deviceIdentityContainer.HMAC) {
 		cli.Log.Warnf("Invalid HMAC from pair success message")
 		cli.sendPairError(reqID, 401, "not-authorized")
 		return ErrPairInvalidDeviceIdentityHMAC

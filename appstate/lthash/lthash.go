@@ -1,6 +1,13 @@
-// Copyright © 2023 whatsmeow
-// Redeveloped by Amirul Dev
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// Package lthash implements a summation based hash algorithm that maintains the
+// integrity of a piece of data over a series of mutations. You can add/remove
+// mutations, and it'll return a hash equal to if the same series of mutations
+// was made sequentially.
 package lthash
 
 import (

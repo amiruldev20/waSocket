@@ -1,3 +1,9 @@
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package store
 
 import (
@@ -68,7 +74,7 @@ func (vc WAVersionContainer) ProtoAppVersion() *waProto.ClientPayload_UserAgent_
 }
 
 // waVersion is the WhatsApp web client version
-var waVersion = WAVersionContainer{2, 2405, 54}
+var waVersion = WAVersionContainer{2, 3000, 1014340090}
 
 // waVersionHash is the md5 hash of a dot-separated waVersion
 var waVersionHash [16]byte
@@ -117,7 +123,7 @@ var BaseClientPayload = &waProto.ClientPayload{
 }
 
 var DeviceProps = &waProto.DeviceProps{
-	Os: proto.String("whatsmeow"),
+	Os: proto.String("waSocket"),
 	Version: &waProto.DeviceProps_AppVersion{
 		Primary:   proto.Uint32(0),
 		Secondary: proto.Uint32(1),
@@ -147,7 +153,7 @@ func (device *Device) getRegistrationPayload() *waProto.ClientPayload {
 		ERegid:      regID,
 		EKeytype:    []byte{ecc.DjbType},
 		EIdent:      device.IdentityKey.Pub[:],
-		ESkeyId:     preKeyID[1:],
+		ESkeyID:     preKeyID[1:],
 		ESkeyVal:    device.SignedPreKey.Pub[:],
 		ESkeySig:    device.SignedPreKey.Signature[:],
 		BuildHash:   waVersionHash[:],

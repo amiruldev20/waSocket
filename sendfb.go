@@ -24,10 +24,10 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	waBinary "github.com/amiruldev20/waSocket/binary"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waCommon"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waConsumerApplication"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waMsgApplication"
-	"github.com/amiruldev20/waSocket/binary/armadillo/waMsgTransport"
+	"github.com/amiruldev20/waSocket/proto/waCommon"
+	"github.com/amiruldev20/waSocket/proto/waConsumerApplication"
+	"github.com/amiruldev20/waSocket/proto/waMsgApplication"
+	"github.com/amiruldev20/waSocket/proto/waMsgTransport"
 	"github.com/amiruldev20/waSocket/types"
 	"github.com/amiruldev20/waSocket/types/events"
 )
@@ -59,25 +59,26 @@ func (cli *Client) SendFBMessage(
 	if metadata == nil {
 		metadata = &waMsgApplication.MessageApplication_Metadata{}
 	}
-	metadata.FrankingVersion = 0
+	metadata.FrankingVersion = proto.Int32(0)
 	metadata.FrankingKey = random.Bytes(32)
 	msgAttrs := getAttrsFromFBMessage(message)
-	messageApp, err := proto.Marshal(&waMsgApplication.MessageApplication{
+	messageAppProto := &waMsgApplication.MessageApplication{
 		Payload: &waMsgApplication.MessageApplication_Payload{
 			Content: &waMsgApplication.MessageApplication_Payload_SubProtocol{
 				SubProtocol: &waMsgApplication.MessageApplication_SubProtocolPayload{
 					SubProtocol: &waMsgApplication.MessageApplication_SubProtocolPayload_ConsumerMessage{
 						ConsumerMessage: &waCommon.SubProtocol{
 							Payload: consumerMessage,
-							Version: FBConsumerMessageVersion,
+							Version: proto.Int32(FBConsumerMessageVersion),
 						},
 					},
-					FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER,
+					FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER.Enum(),
 				},
 			},
 		},
 		Metadata: metadata,
-	})
+	}
+	messageApp, err := proto.Marshal(messageAppProto)
 	if err != nil {
 		return resp, fmt.Errorf("failed to marshal message application: %w", err)
 	}
@@ -109,9 +110,9 @@ func (cli *Client) SendFBMessage(
 	defer cli.messageSendLock.Unlock()
 
 	respChan := cli.waitResponse(req.ID)
-	//if !req.Peer {
-	//	cli.addRecentMessage(to, req.ID, message)
-	//}
+	if !req.Peer {
+		cli.addRecentMessage(to, req.ID, nil, messageAppProto)
+	}
 	var phash string
 	var data []byte
 	switch to.Server {
@@ -122,7 +123,7 @@ func (cli *Client) SendFBMessage(
 			err = fmt.Errorf("peer messages to fb are not yet supported")
 			//data, err = cli.sendPeerMessage(to, req.ID, message, &resp.DebugTimings)
 		} else {
-			data, err = cli.sendDMV3(ctx, to, ownID, req.ID, messageApp, msgAttrs, frankingTag, &resp.DebugTimings)
+			data, phash, err = cli.sendDMV3(ctx, to, ownID, req.ID, messageApp, msgAttrs, frankingTag, &resp.DebugTimings)
 		}
 	default:
 		err = fmt.Errorf("%w %s", ErrUnknownServer, to.Server)
@@ -205,7 +206,7 @@ func (cli *Client) sendGroupV3(
 		return "", nil, fmt.Errorf("failed to create sender key distribution message to send %s to %s: %w", id, to, err)
 	}
 	skdm := &waMsgTransport.MessageTransport_Protocol_Ancillary_SenderKeyDistributionMessage{
-		GroupID:                             to.String(),
+		GroupID:                             proto.String(to.String()),
 		AxolotlSenderKeyDistributionMessage: signalSKDMessage.Serialize(),
 	}
 
@@ -214,9 +215,9 @@ func (cli *Client) sendGroupV3(
 		Payload: &waMsgTransport.MessageTransport_Payload{
 			ApplicationPayload: &waCommon.SubProtocol{
 				Payload: messageApp,
-				Version: FBMessageApplicationVersion,
+				Version: proto.Int32(FBMessageApplicationVersion),
 			},
-			FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER,
+			FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER.Enum(),
 		},
 		Protocol: &waMsgTransport.MessageTransport_Protocol{
 			Integral: &waMsgTransport.MessageTransport_Protocol_Integral{
@@ -228,8 +229,8 @@ func (cli *Client) sendGroupV3(
 				DeviceListMetadata: nil,
 				Icdc:               nil,
 				BackupDirective: &waMsgTransport.MessageTransport_Protocol_Ancillary_BackupDirective{
-					MessageID:  id,
-					ActionType: waMsgTransport.MessageTransport_Protocol_Ancillary_BackupDirective_UPSERT,
+					MessageID:  &id,
+					ActionType: waMsgTransport.MessageTransport_Protocol_Ancillary_BackupDirective_UPSERT.Enum(),
 				},
 			},
 		},
@@ -244,7 +245,7 @@ func (cli *Client) sendGroupV3(
 	ciphertext := encrypted.SignedSerialize()
 	timings.GroupEncrypt = time.Since(start)
 
-	node, allDevices, err := cli.prepareMessageNodeV3(ctx, to, ownID, id, nil, skdm, nil, msgAttrs, frankingTag, participants, timings)
+	node, allDevices, err := cli.prepareMessageNodeV3(ctx, to, ownID, id, nil, skdm, msgAttrs, frankingTag, participants, timings)
 	if err != nil {
 		return "", nil, err
 	}
@@ -279,30 +280,26 @@ func (cli *Client) sendDMV3(
 	msgAttrs messageAttrs,
 	frankingTag []byte,
 	timings *MessageDebugTimings,
-) ([]byte, error) {
-	dsm := &waMsgTransport.MessageTransport_Protocol_Integral_DeviceSentMessage{
-		DestinationJID: to.String(),
-		Phash:          "",
-	}
+) ([]byte, string, error) {
 	payload := &waMsgTransport.MessageTransport_Payload{
 		ApplicationPayload: &waCommon.SubProtocol{
 			Payload: messageApp,
-			Version: FBMessageApplicationVersion,
+			Version: proto.Int32(FBMessageApplicationVersion),
 		},
-		FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER,
+		FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER.Enum(),
 	}
 
-	node, _, err := cli.prepareMessageNodeV3(ctx, to, ownID, id, payload, nil, dsm, msgAttrs, frankingTag, []types.JID{to, ownID.ToNonAD()}, timings)
+	node, allDevices, err := cli.prepareMessageNodeV3(ctx, to, ownID, id, payload, nil, msgAttrs, frankingTag, []types.JID{to, ownID.ToNonAD()}, timings)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	start := time.Now()
 	data, err := cli.sendNodeAndGetData(*node)
 	timings.Send = time.Since(start)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send message node: %w", err)
+		return nil, "", fmt.Errorf("failed to send message node: %w", err)
 	}
-	return data, nil
+	return data, participantListHashV2(allDevices), nil
 }
 
 type messageAttrs struct {
@@ -393,7 +390,6 @@ func (cli *Client) prepareMessageNodeV3(
 	id types.MessageID,
 	payload *waMsgTransport.MessageTransport_Payload,
 	skdm *waMsgTransport.MessageTransport_Protocol_Ancillary_SenderKeyDistributionMessage,
-	dsm *waMsgTransport.MessageTransport_Protocol_Integral_DeviceSentMessage,
 	msgAttrs messageAttrs,
 	frankingTag []byte,
 	participants []types.JID,
@@ -423,6 +419,11 @@ func (cli *Client) prepareMessageNodeV3(
 		encAttrs["decrypt-fail"] = string(msgAttrs.DecryptFail)
 	}
 
+	dsm := &waMsgTransport.MessageTransport_Protocol_Integral_DeviceSentMessage{
+		DestinationJID: proto.String(to.String()),
+		Phash:          proto.String(""),
+	}
+
 	start = time.Now()
 	participantNodes := cli.encryptMessageForDevicesV3(ctx, allDevices, ownID, id, payload, skdm, dsm, encAttrs)
 	timings.PeerEncrypt = time.Since(start)
@@ -450,10 +451,7 @@ func (cli *Client) prepareMessageNodeV3(
 		Content: []waBinary.Node{{
 			Tag:     "franking_tag",
 			Content: frankingTag,
-		}, /*, {
-			Tag:     "reporting_tag",
-			Content: reportingTag,
-		}*/},
+		}},
 	}, waBinary.Node{
 		Tag: "trace",
 		Content: []waBinary.Node{{

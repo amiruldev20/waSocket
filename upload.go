@@ -1,3 +1,9 @@
+// Copyright (c) 2021 Tulir Asokan
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package waSocket
 
 import (
@@ -22,7 +28,8 @@ type UploadResponse struct {
 	URL        string `json:"url"`
 	DirectPath string `json:"direct_path"`
 	Handle     string `json:"handle"`
-	
+	ObjectID   string `json:"object_id"`
+
 	MediaKey      []byte `json:"-"`
 	FileEncSHA256 []byte `json:"-"`
 	FileSHA256    []byte `json:"-"`
@@ -35,7 +42,7 @@ type UploadResponse struct {
 //
 // For example, to send an image:
 //
-//	resp, err := cli.Upload(context.Background(), yourImageBytes, whatsmeow.MediaImage)
+//	resp, err := cli.Upload(context.Background(), yourImageBytes, waSocket.MediaImage)
 //	// handle error
 //
 //	imageMsg := &waProto.ImageMessage{
@@ -92,7 +99,7 @@ func (cli *Client) Upload(ctx context.Context, plaintext []byte, appInfo MediaTy
 //
 // Example:
 //
-//	resp, err := cli.UploadNewsletter(context.Background(), yourImageBytes, whatsmeow.MediaImage)
+//	resp, err := cli.UploadNewsletter(context.Background(), yourImageBytes, waSocket.MediaImage)
 //	// handle error
 //
 //	imageMsg := &waProto.ImageMessage{
@@ -109,12 +116,11 @@ func (cli *Client) Upload(ctx context.Context, plaintext []byte, appInfo MediaTy
 //	}
 //	_, err = cli.SendMessage(context.Background(), newsletterJID, &waProto.Message{
 //		ImageMessage: imageMsg,
-//	}, whatsmeow.SendRequestExtra{
+//	}, waSocket.SendRequestExtra{
 //		// Unlike normal media, newsletters also include a "media handle" in the send request.
 //		MediaHandle: resp.Handle,
 //	})
 //	// handle error again
-
 func (cli *Client) UploadNewsletter(ctx context.Context, data []byte, appInfo MediaType) (resp UploadResponse, err error) {
 	resp.FileLength = uint64(len(data))
 	hash := sha256.Sum256(data)
@@ -136,13 +142,28 @@ func (cli *Client) rawUpload(ctx context.Context, dataToUpload, fileHash []byte,
 	}
 	mmsType := mediaTypeToMMSType[appInfo]
 	uploadPrefix := "mms"
+	if cli.MessengerConfig != nil {
+		uploadPrefix = "wa-msgr/mms"
+		// Messenger upload only allows voice messages, not audio files
+		if mmsType == "audio" {
+			mmsType = "ptt"
+		}
+	}
 	if newsletter {
 		mmsType = fmt.Sprintf("newsletter-%s", mmsType)
 		uploadPrefix = "newsletter"
 	}
+	var host string
+	// Hacky hack to prefer last option (rupload.facebook.com) for messenger uploads.
+	// For some reason, the primary host doesn't work, even though it has the <upload/> tag.
+	if cli.MessengerConfig != nil {
+		host = mediaConn.Hosts[len(mediaConn.Hosts)-1].Hostname
+	} else {
+		host = mediaConn.Hosts[0].Hostname
+	}
 	uploadURL := url.URL{
 		Scheme:   "https",
-		Host:     mediaConn.Hosts[0].Hostname,
+		Host:     host,
 		Path:     fmt.Sprintf("/%s/%s/%s", uploadPrefix, mmsType, token),
 		RawQuery: q.Encode(),
 	}

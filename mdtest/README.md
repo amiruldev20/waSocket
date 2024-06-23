@@ -1,6 +1,6 @@
 # mdtest
 
-This is a simple tool for testing whatsmeow.
+This is a simple tool for testing waSocket.
 
 1. Clone the repository.
 2. Run `go build` inside this directory.
