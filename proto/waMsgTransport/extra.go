@@ -1,8 +1,8 @@
 package waMsgTransport
 
 import (
-	"go.mau.fi/whatsmeow/proto/armadilloutil"
-	"go.mau.fi/whatsmeow/proto/waMsgApplication"
+	"github.com/amiruldev20/waSocket/proto/armadilloutil"
+	"github.com/amiruldev20/waSocket/proto/waMsgApplication"
 )
 
 const (

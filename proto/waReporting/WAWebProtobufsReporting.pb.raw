@@ -1,32 +1,42 @@
 
-)waReporting/WAWebProtobufsReporting.protoWAWebProtobufsReporting"œ
+)waReporting/WAWebProtobufsReporting.protoWAWebProtobufsReporting"ï¿½
 
 Reportable
 
-minVersion (R
+minVersion (
+R
 minVersion
 
-maxVersion (R
+maxVersion (
+R
 maxVersion8
-notReportableMinVersion (RnotReportableMinVersion
-never (Rnever"¾
+notReportableMinVersion (
+RnotReportableMinVersion
+never (Rnever"ï¿½
 Config@
 field (2*.WAWebProtobufsReporting.Config.FieldEntryRfield
-version (RversionX
+version (
+RversionX
 
 FieldEntry
-key (Rkey4
-value (2.WAWebProtobufsReporting.FieldRvalue:8"Æ
+key (
+Rkey4
+value (2.WAWebProtobufsReporting.FieldRvalue:8"ï¿½
 Field
 
-minVersion (R
+minVersion (
+R
 minVersion
 
-maxVersion (R
+maxVersion (
+Rgithub.com/amiruldev20/waSocket
 maxVersion8
-notReportableMinVersion (RnotReportableMinVersion
+notReportableMinVersion (
+RnotReportableMinVersion
 	isMessage (R	isMessageH
 subfield (2,.WAWebProtobufsReporting.Field.SubfieldEntryRsubfield[
-SubfieldEntry
-key (Rkey4
+
+SubfieldEntry
+key (
+Rkey4
 value (2.WAWebProtobufsReporting.FieldRvalue:8B'Z%go.mau.fi/whatsmeow/proto/waReportingbproto3

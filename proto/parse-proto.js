@@ -448,7 +448,7 @@ function protoifyModule(module) {
 		output.push(`syntax = "proto2";`)
 	}
 	output.push(`package ${module.__name__};`)
-	output.push(`option go_package = "go.mau.fi/whatsmeow/proto/${goPackageName(module.__name__)}";`)
+	output.push(`option go_package = "github.com/amiruldev20/waSocket/proto/${goPackageName(module.__name__)}";`)
 	output.push("")
 	if (module.dependencies.length > 0) {
 		for (const dependency of module.dependencies) {
