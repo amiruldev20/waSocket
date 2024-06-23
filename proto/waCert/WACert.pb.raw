@@ -1,26 +1,23 @@
 
-waCert/WACert.protoWACert"ï¿½
+waCert/WACert.protoWACert"Ë
 NoiseCertificate
 details (Rdetails
 	signature (R	signature
 Details
-serial (
-Rserial
+serial (Rserial
 issuer (	Rissuer
 expires (Rexpires
 subject (	Rsubject
-key (Rkey"ï¿½
+key (Rkey"ì
 	CertChain6
 leaf (2".WACert.CertChain.NoiseCertificateRleafF
-intermediate (2".WACert.CertChain.NoiseCertificateRintermediateï¿½
+intermediate (2".WACert.CertChain.NoiseCertificateRintermediateÞ
 NoiseCertificate
 details (Rdetails
-	signature (R	signatureï¿½
+	signature (R	signature‘
 Details
-serial (
-Rserial"
-issuerSerial (
-RissuerSerialgithub.com/amiruldev20/waSocket
+serial (Rserial"
+issuerSerial (RissuerSerial
 key (Rkey
 	notBefore (R	notBefore
-notAfter (RnotAfterB"Z go.mau.fi/waSocket/proto/waCert
+notAfter (RnotAfterB"Z go.mau.fi/whatsmeow/proto/waCert

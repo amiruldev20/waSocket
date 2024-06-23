@@ -1,10 +1,10 @@
 package armadillo
 
 import (
-	"github.com/amiruldev20/waSocket/proto/waArmadilloApplication"
-	"github.com/amiruldev20/waSocket/proto/waCommon"
-	"github.com/amiruldev20/waSocket/proto/waConsumerApplication"
-	"github.com/amiruldev20/waSocket/proto/waMultiDevice"
+	"go.mau.fi/whatsmeow/proto/waArmadilloApplication"
+	"go.mau.fi/whatsmeow/proto/waCommon"
+	"go.mau.fi/whatsmeow/proto/waConsumerApplication"
+	"go.mau.fi/whatsmeow/proto/waMultiDevice"
 )
 
 type MessageApplicationSub interface {

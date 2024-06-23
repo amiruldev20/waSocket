@@ -1,12 +1,12 @@
 
-CwaQuickPromotionSurfaces/WAWebProtobufsQuickPromotionSurfaces.proto$WAWebProtobufsQuickPromotionSurfaces"ï¿½
-QPï¿½
+CwaQuickPromotionSurfaces/WAWebProtobufsQuickPromotionSurfaces.proto$WAWebProtobufsQuickPromotionSurfaces"Ï
+QPÿ
 FilterClauseS
 
 clauseType (23.WAWebProtobufsQuickPromotionSurfaces.QP.ClauseTypeR
 clauseTypeO
 clauses (25.WAWebProtobufsQuickPromotionSurfaces.QP.FilterClauseRclausesI
-filters (2/.WAWebProtobufsQuickPromotionSurfaces.QP.FilterRfiltersï¿½
+filters (2/.WAWebProtobufsQuickPromotionSurfaces.QP.FilterRfiltersä
 Filter
 
 filterName (	R
@@ -14,7 +14,7 @@ filterNameY
 
 parameters (29.WAWebProtobufsQuickPromotionSurfaces.QP.FilterParametersR
 parametersY
-filterResult (25.WAWebProtobufsQuickPromotionSurfaces.QP.FilterResultRfilterResultï¿½
+filterResult (25.WAWebProtobufsQuickPromotionSurfaces.QP.FilterResultRfilterResultƒ
 clientNotSupportedConfig (2G.WAWebProtobufsQuickPromotionSurfaces.QP.FilterClientNotSupportedConfigRclientNotSupportedConfig:
 FilterParameters
 key (	Rkey
@@ -30,4 +30,4 @@ parametersY
 ClauseType
 AND
 OR
-NORB4Z2github.com/amiruldev20/waSocket/proto/waQuickPromotionSurfaces
+NORB4Z2go.mau.fi/whatsmeow/proto/waQuickPromotionSurfaces
