@@ -15,6 +15,8 @@ import (
 	waBinary "github.com/amiruldev20/waSocket/binary"
 	waProto "github.com/amiruldev20/waSocket/binary/proto"
 	armadillo "github.com/amiruldev20/waSocket/proto"
+	"github.com/amiruldev20/waSocket/proto/waArmadilloApplication"
+	"github.com/amiruldev20/waSocket/proto/waConsumerApplication"
 	"github.com/amiruldev20/waSocket/proto/waMsgApplication"
 	"github.com/amiruldev20/waSocket/proto/waMsgTransport"
 	"github.com/amiruldev20/waSocket/types"
@@ -299,6 +301,20 @@ type FBMessage struct {
 
 	Transport   *waMsgTransport.MessageTransport     // The first level of wrapping the message was in
 	Application *waMsgApplication.MessageApplication // The second level of wrapping the message was in
+}
+
+func (evt *FBMessage) GetConsumerApplication() *waConsumerApplication.ConsumerApplication {
+	if consumerApp, ok := evt.Message.(*waConsumerApplication.ConsumerApplication); ok {
+		return consumerApp
+	}
+	return nil
+}
+
+func (evt *FBMessage) GetArmadillo() *waArmadilloApplication.Armadillo {
+	if armadillo, ok := evt.Message.(*waArmadilloApplication.Armadillo); ok {
+		return armadillo
+	}
+	return nil
 }
 
 // UnwrapRaw fills the Message, IsEphemeral and IsViewOnce fields based on the raw message in the RawMessage field.

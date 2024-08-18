@@ -1,6 +1,8 @@
 package armadillo
 
 import (
+	"google.golang.org/protobuf/proto"
+
 	"github.com/amiruldev20/waSocket/proto/waArmadilloApplication"
 	"github.com/amiruldev20/waSocket/proto/waCommon"
 	"github.com/amiruldev20/waSocket/proto/waConsumerApplication"
@@ -9,6 +11,11 @@ import (
 
 type MessageApplicationSub interface {
 	IsMessageApplicationSub()
+}
+
+type RealMessageApplicationSub interface {
+	MessageApplicationSub
+	proto.Message
 }
 
 type Unsupported_BusinessApplication waCommon.SubProtocol
