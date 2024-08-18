@@ -1,14 +1,14 @@
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#table-of-contents)
 # waSocket
-[COMMUNITY - CLICK HERE](https://chat.whatsapp.com/LDx0igxGdGG9o3luMRngMC) - [DOCS waSocket - Soon ](https://waSocket.amirull.dev)
+[COMMUNITY - CLICK HERE](https://chat.whatsapp.com/JbzMsezhCwUKdC6dnjwcIz) - [DOCS waSocket](https://pkg.go.dev/github.com/amiruldev20/waSocket)
 
- > *NB*: This is a whatsmeow library that has been redeveloped and fixed some bugs
+ > *NB*: This is a whatsmeow library that has been improved and have fixed some bugs
  
 
 ```
-This library was created in the Golang language
-and uses sockets. 2x faster and lighter
-so it doesn't take up a lot of RAM
+This library is created using Golang Programming Language
+and uses sockets not browser emulation. Resulted in 2x faster and lighter library
+and It doesn't take up a lot of RAM (But it takes a lot of cpu, lmao)
 ```
 
 ## Supported features
