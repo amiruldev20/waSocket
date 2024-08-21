@@ -22,7 +22,7 @@ import (
 	waLog "github.com/amiruldev20/waSocket/util/log"
 )
 
-// Container is a wrapper for a SQL database that can contain multiple waSocket sessions.
+// Container is a wrapper for a SQL database that can contain multiple whatsmeow sessions.
 type Container struct {
 	db      *sql.DB
 	dialect string
@@ -89,7 +89,7 @@ SELECT jid, registration_id, noise_key, identity_key,
        signed_pre_key, signed_pre_key_id, signed_pre_key_sig,
        adv_key, adv_details, adv_account_sig, adv_account_sig_key, adv_device_sig,
        platform, business_name, push_name, facebook_uuid
-FROM waSocket_device
+FROM whatsmeow_device
 `
 
 const getDeviceQuery = getAllDevicesQuery + " WHERE jid=$1"
@@ -189,7 +189,7 @@ func (c *Container) GetDevice(jid types.JID) (*store.Device, error) {
 
 const (
 	insertDeviceQuery = `
-		INSERT INTO waSocket_device (jid, registration_id, noise_key, identity_key,
+		INSERT INTO whatsmeow_device (jid, registration_id, noise_key, identity_key,
 									  signed_pre_key, signed_pre_key_id, signed_pre_key_sig,
 									  adv_key, adv_details, adv_account_sig, adv_account_sig_key, adv_device_sig,
 									  platform, business_name, push_name, facebook_uuid)
@@ -197,7 +197,7 @@ const (
 		ON CONFLICT (jid) DO UPDATE
 		    SET platform=excluded.platform, business_name=excluded.business_name, push_name=excluded.push_name
 	`
-	deleteDeviceQuery = `DELETE FROM waSocket_device WHERE jid=$1`
+	deleteDeviceQuery = `DELETE FROM whatsmeow_device WHERE jid=$1`
 )
 
 // NewDevice creates a new device in this database.

@@ -1,32 +1,35 @@
-[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#table-of-contents)
-# waSocket
-[COMMUNITY - CLICK HERE](https://chat.whatsapp.com/JbzMsezhCwUKdC6dnjwcIz) - [DOCS waSocket](https://pkg.go.dev/github.com/amiruldev20/waSocket)
+# whatsmeow
+[![Go Reference](https://pkg.go.dev/badge/go.mau.fi/whatsmeow.svg)](https://pkg.go.dev/go.mau.fi/whatsmeow)
 
- > *NB*: This is a whatsmeow library that has been improved and have fixed some bugs
- 
+whatsmeow is a Go library for the WhatsApp web multidevice API.
 
-```
-This library is created using Golang Programming Language
-and uses sockets not browser emulation. Resulted in 2x faster and lighter library
-and It doesn't take up a lot of RAM (But it takes a lot of cpu, lmao)
-```
+## Discussion
+Matrix room: [#whatsmeow:maunium.net](https://matrix.to/#/#whatsmeow:maunium.net)
 
-## Supported features
+For questions about the WhatsApp protocol (like how to send a specific type of
+message), you can also use the [WhatsApp protocol Q&A] section on GitHub
+discussions.
 
-| Feature  | Status |
-| ------------- | ------------- |
-| Login via phone | ✅ |
-| Multi Device | ✅ |
-| Create Channel | ✅ |
-| Follow Channel | ✅ |
-| Unfollow Channel | ✅ |
-| Send polling | ✅ |
-| Read story | ✅ |
-| Get story | ✅ |
-| Send call | ✅ |
-| Accept call | ✅ |
-| Reject call | ✅ |
-| Get member request | ✅ |
-| Accept member request | ✅ |
-| Reject member request | ✅ |
-| And Etc | ✅ |
+[WhatsApp protocol Q&A]: https://github.com/tulir/whatsmeow/discussions/categories/whatsapp-protocol-q-a
+
+## Usage
+The [godoc](https://pkg.go.dev/go.mau.fi/whatsmeow) includes docs for all methods and event types.
+There's also a [simple example](https://pkg.go.dev/go.mau.fi/whatsmeow#example-package) at the top.
+
+## Features
+Most core features are already present:
+
+* Sending messages to private chats and groups (both text and media)
+* Receiving all messages
+* Managing groups and receiving group change events
+* Joining via invite messages, using and creating invite links
+* Sending and receiving typing notifications
+* Sending and receiving delivery and read receipts
+* Reading and writing app state (contact list, chat pin/mute status, etc)
+* Sending and handling retry receipts if message decryption fails
+* Sending status messages (experimental, may not work for large contact lists)
+
+Things that are not yet implemented:
+
+* Sending broadcast list messages (this is not supported on WhatsApp web either)
+* Calls

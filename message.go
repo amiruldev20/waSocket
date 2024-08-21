@@ -284,11 +284,6 @@ func (cli *Client) decryptMessages(info *types.MessageInfo, node *waBinary.Node)
 
 			// step 4: decrypt and voila
 			decrypted, err = cli.decryptBotMessage(messageSecret, &msMsg, messageID, targetSenderJID, info)
-
-			if err != nil {
-				cli.Log.Warnf("Error decoding BotMessage %v", err)
-				continue
-			}
 		} else {
 			cli.Log.Warnf("Unhandled encrypted message (type %s) from %s", encType, info.SourceString())
 			continue

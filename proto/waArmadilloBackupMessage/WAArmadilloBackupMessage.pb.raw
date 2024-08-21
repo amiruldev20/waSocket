@@ -1,9 +1,8 @@
 
-7waArmadilloBackupMessage/WAArmadilloBackupMessage.protoWAArmadilloBackupMessage"ï¿½
-
-BackupMessageL
+7waArmadilloBackupMessage/WAArmadilloBackupMessage.protoWAArmadilloBackupMessage"ƒ
+BackupMessageL
 metadata (20.WAArmadilloBackupMessage.BackupMessage.MetadataRmetadata
-payload (Rpayloadï¿½
+payload (Rpayload‰
 Metadata
 senderID (	RsenderID
 	messageID (	R	messageID 
@@ -12,5 +11,5 @@ BackupMessageL
 payloadVersion (RpayloadVersion0
 futureProofBehavior (RfutureProofBehaviorX
 FrankingMetadata 
-frankingTag (RfrankingTag"github.com/amiruldev20/waSocket
-reportingTag (RreportingTagB4Z2go.mau.fi/waSocket/proto/waArmadilloBackupMessage
+frankingTag (RfrankingTag"
+reportingTag (RreportingTagB4Z2go.mau.fi/whatsmeow/proto/waArmadilloBackupMessage

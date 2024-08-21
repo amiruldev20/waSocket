@@ -86,16 +86,12 @@ func decodeArmadillo(data []byte) (dec events.FBMessage, err error) {
 		default:
 			return dec, fmt.Errorf("unsupported subprotocol type: %T", subProtocol)
 		}
-		//Comment unsused err
-
-		/*
-			if protoMsg != nil {
-				err = proto.Unmarshal(subData.GetPayload(), protoMsg)
-				if err != nil {
-					return dec, fmt.Errorf("failed to unmarshal application subprotocol payload (%T v%d): %w", protoMsg, subData.GetVersion(), err)
-				}
-			}
-		*/
+		// if protoMsg != nil {
+		// 	err = proto.Unmarshal(subData.GetPayload(), protoMsg)
+		// 	if err != nil {
+		// 		return dec, fmt.Errorf("failed to unmarshal application subprotocol payload (%T v%d): %w", protoMsg, subData.GetVersion(), err)
+		// 	}
+		// }
 	default:
 		err = fmt.Errorf("unsupported application payload content type: %T", typedContent)
 	}

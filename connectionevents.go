@@ -174,7 +174,7 @@ func (cli *Client) handleConnectSuccess(node *waBinary.Node) {
 // SetPassive tells the WhatsApp server whether this device is passive or not.
 //
 // This seems to mostly affect whether the device receives certain events.
-// By default, waSocket will automatically do SetPassive(false) after connecting.
+// By default, whatsmeow will automatically do SetPassive(false) after connecting.
 func (cli *Client) SetPassive(passive bool) error {
 	tag := "active"
 	if passive {

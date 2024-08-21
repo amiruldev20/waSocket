@@ -20,13 +20,13 @@ type upgradeFunc func(*sql.Tx, *Container) error
 var Upgrades = [...]upgradeFunc{upgradeV1, upgradeV2, upgradeV3, upgradeV4, upgradeV5, upgradeV6}
 
 func (c *Container) getVersion() (int, error) {
-	_, err := c.db.Exec("CREATE TABLE IF NOT EXISTS waSocket_version (version INTEGER)")
+	_, err := c.db.Exec("CREATE TABLE IF NOT EXISTS whatsmeow_version (version INTEGER)")
 	if err != nil {
 		return -1, err
 	}
 
 	version := 0
-	row := c.db.QueryRow("SELECT version FROM waSocket_version LIMIT 1")
+	row := c.db.QueryRow("SELECT version FROM whatsmeow_version LIMIT 1")
 	if row != nil {
 		_ = row.Scan(&version)
 	}
@@ -34,11 +34,11 @@ func (c *Container) getVersion() (int, error) {
 }
 
 func (c *Container) setVersion(tx *sql.Tx, version int) error {
-	_, err := tx.Exec("DELETE FROM waSocket_version")
+	_, err := tx.Exec("DELETE FROM whatsmeow_version")
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec("INSERT INTO waSocket_version (version) VALUES ($1)", version)
+	_, err = tx.Exec("INSERT INTO whatsmeow_version (version) VALUES ($1)", version)
 	return err
 }
 
@@ -87,7 +87,7 @@ func (c *Container) Upgrade() error {
 }
 
 func upgradeV1(tx *sql.Tx, _ *Container) error {
-	_, err := tx.Exec(`CREATE TABLE waSocket_device (
+	_, err := tx.Exec(`CREATE TABLE whatsmeow_device (
 		jid TEXT PRIMARY KEY,
 
 		registration_id BIGINT NOT NULL CHECK ( registration_id >= 0 AND registration_id < 4294967296 ),
@@ -111,53 +111,53 @@ func upgradeV1(tx *sql.Tx, _ *Container) error {
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE TABLE waSocket_identity_keys (
+	_, err = tx.Exec(`CREATE TABLE whatsmeow_identity_keys (
 		our_jid  TEXT,
 		their_id TEXT,
 		identity bytea NOT NULL CHECK ( length(identity) = 32 ),
 
 		PRIMARY KEY (our_jid, their_id),
-		FOREIGN KEY (our_jid) REFERENCES waSocket_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (our_jid) REFERENCES whatsmeow_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
 	)`)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE TABLE waSocket_pre_keys (
+	_, err = tx.Exec(`CREATE TABLE whatsmeow_pre_keys (
 		jid      TEXT,
 		key_id   INTEGER          CHECK ( key_id >= 0 AND key_id < 16777216 ),
 		key      bytea   NOT NULL CHECK ( length(key) = 32 ),
 		uploaded BOOLEAN NOT NULL,
 
 		PRIMARY KEY (jid, key_id),
-		FOREIGN KEY (jid) REFERENCES waSocket_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (jid) REFERENCES whatsmeow_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
 	)`)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE TABLE waSocket_sessions (
+	_, err = tx.Exec(`CREATE TABLE whatsmeow_sessions (
 		our_jid  TEXT,
 		their_id TEXT,
 		session  bytea,
 
 		PRIMARY KEY (our_jid, their_id),
-		FOREIGN KEY (our_jid) REFERENCES waSocket_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (our_jid) REFERENCES whatsmeow_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
 	)`)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE TABLE waSocket_sender_keys (
+	_, err = tx.Exec(`CREATE TABLE whatsmeow_sender_keys (
 		our_jid    TEXT,
 		chat_id    TEXT,
 		sender_id  TEXT,
 		sender_key bytea NOT NULL,
 
 		PRIMARY KEY (our_jid, chat_id, sender_id),
-		FOREIGN KEY (our_jid) REFERENCES waSocket_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (our_jid) REFERENCES whatsmeow_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
 	)`)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE TABLE waSocket_app_state_sync_keys (
+	_, err = tx.Exec(`CREATE TABLE whatsmeow_app_state_sync_keys (
 		jid         TEXT,
 		key_id      bytea,
 		key_data    bytea  NOT NULL,
@@ -165,24 +165,24 @@ func upgradeV1(tx *sql.Tx, _ *Container) error {
 		fingerprint bytea  NOT NULL,
 
 		PRIMARY KEY (jid, key_id),
-		FOREIGN KEY (jid) REFERENCES waSocket_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (jid) REFERENCES whatsmeow_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
 	)`)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE TABLE waSocket_app_state_version (
+	_, err = tx.Exec(`CREATE TABLE whatsmeow_app_state_version (
 		jid     TEXT,
 		name    TEXT,
 		version BIGINT NOT NULL,
 		hash    bytea  NOT NULL CHECK ( length(hash) = 128 ),
 
 		PRIMARY KEY (jid, name),
-		FOREIGN KEY (jid) REFERENCES waSocket_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (jid) REFERENCES whatsmeow_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
 	)`)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE TABLE waSocket_app_state_mutation_macs (
+	_, err = tx.Exec(`CREATE TABLE whatsmeow_app_state_mutation_macs (
 		jid       TEXT,
 		name      TEXT,
 		version   BIGINT,
@@ -190,12 +190,12 @@ func upgradeV1(tx *sql.Tx, _ *Container) error {
 		value_mac bytea NOT NULL CHECK ( length(value_mac) = 32 ),
 
 		PRIMARY KEY (jid, name, version, index_mac),
-		FOREIGN KEY (jid, name) REFERENCES waSocket_app_state_version(jid, name) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (jid, name) REFERENCES whatsmeow_app_state_version(jid, name) ON DELETE CASCADE ON UPDATE CASCADE
 	)`)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE TABLE waSocket_contacts (
+	_, err = tx.Exec(`CREATE TABLE whatsmeow_contacts (
 		our_jid       TEXT,
 		their_jid     TEXT,
 		first_name    TEXT,
@@ -204,12 +204,12 @@ func upgradeV1(tx *sql.Tx, _ *Container) error {
 		business_name TEXT,
 
 		PRIMARY KEY (our_jid, their_jid),
-		FOREIGN KEY (our_jid) REFERENCES waSocket_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (our_jid) REFERENCES whatsmeow_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
 	)`)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE TABLE waSocket_chat_settings (
+	_, err = tx.Exec(`CREATE TABLE whatsmeow_chat_settings (
 		our_jid       TEXT,
 		chat_jid      TEXT,
 		muted_until   BIGINT  NOT NULL DEFAULT 0,
@@ -217,7 +217,7 @@ func upgradeV1(tx *sql.Tx, _ *Container) error {
 		archived      BOOLEAN NOT NULL DEFAULT false,
 
 		PRIMARY KEY (our_jid, chat_jid),
-		FOREIGN KEY (our_jid) REFERENCES waSocket_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (our_jid) REFERENCES whatsmeow_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
 	)`)
 	if err != nil {
 		return err
@@ -226,27 +226,27 @@ func upgradeV1(tx *sql.Tx, _ *Container) error {
 }
 
 const fillSigKeyPostgres = `
-UPDATE waSocket_device SET adv_account_sig_key=(
+UPDATE whatsmeow_device SET adv_account_sig_key=(
 	SELECT identity
-	FROM waSocket_identity_keys
-	WHERE our_jid=waSocket_device.jid
-	  AND their_id=concat(split_part(waSocket_device.jid, '.', 1), ':0')
+	FROM whatsmeow_identity_keys
+	WHERE our_jid=whatsmeow_device.jid
+	  AND their_id=concat(split_part(whatsmeow_device.jid, '.', 1), ':0')
 );
-DELETE FROM waSocket_device WHERE adv_account_sig_key IS NULL;
-ALTER TABLE waSocket_device ALTER COLUMN adv_account_sig_key SET NOT NULL;
+DELETE FROM whatsmeow_device WHERE adv_account_sig_key IS NULL;
+ALTER TABLE whatsmeow_device ALTER COLUMN adv_account_sig_key SET NOT NULL;
 `
 
 const fillSigKeySQLite = `
-UPDATE waSocket_device SET adv_account_sig_key=(
+UPDATE whatsmeow_device SET adv_account_sig_key=(
 	SELECT identity
-	FROM waSocket_identity_keys
-	WHERE our_jid=waSocket_device.jid
-	  AND their_id=substr(waSocket_device.jid, 0, instr(waSocket_device.jid, '.')) || ':0'
+	FROM whatsmeow_identity_keys
+	WHERE our_jid=whatsmeow_device.jid
+	  AND their_id=substr(whatsmeow_device.jid, 0, instr(whatsmeow_device.jid, '.')) || ':0'
 )
 `
 
 func upgradeV2(tx *sql.Tx, container *Container) error {
-	_, err := tx.Exec("ALTER TABLE waSocket_device ADD COLUMN adv_account_sig_key bytea CHECK ( length(adv_account_sig_key) = 32 )")
+	_, err := tx.Exec("ALTER TABLE whatsmeow_device ADD COLUMN adv_account_sig_key bytea CHECK ( length(adv_account_sig_key) = 32 )")
 	if err != nil {
 		return err
 	}
@@ -259,7 +259,7 @@ func upgradeV2(tx *sql.Tx, container *Container) error {
 }
 
 func upgradeV3(tx *sql.Tx, container *Container) error {
-	_, err := tx.Exec(`CREATE TABLE waSocket_message_secrets (
+	_, err := tx.Exec(`CREATE TABLE whatsmeow_message_secrets (
 		our_jid    TEXT,
 		chat_jid   TEXT,
 		sender_jid TEXT,
@@ -267,13 +267,13 @@ func upgradeV3(tx *sql.Tx, container *Container) error {
 		key        bytea NOT NULL,
 
 		PRIMARY KEY (our_jid, chat_jid, sender_jid, message_id),
-		FOREIGN KEY (our_jid) REFERENCES waSocket_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (our_jid) REFERENCES whatsmeow_device(jid) ON DELETE CASCADE ON UPDATE CASCADE
 	)`)
 	return err
 }
 
 func upgradeV4(tx *sql.Tx, container *Container) error {
-	_, err := tx.Exec(`CREATE TABLE waSocket_privacy_tokens (
+	_, err := tx.Exec(`CREATE TABLE whatsmeow_privacy_tokens (
 		our_jid   TEXT,
 		their_jid TEXT,
 		token     bytea  NOT NULL,
@@ -284,11 +284,11 @@ func upgradeV4(tx *sql.Tx, container *Container) error {
 }
 
 func upgradeV5(tx *sql.Tx, container *Container) error {
-	_, err := tx.Exec("UPDATE waSocket_device SET jid=REPLACE(jid, '.0', '')")
+	_, err := tx.Exec("UPDATE whatsmeow_device SET jid=REPLACE(jid, '.0', '')")
 	return err
 }
 
 func upgradeV6(tx *sql.Tx, container *Container) error {
-	_, err := tx.Exec("ALTER TABLE waSocket_device ADD COLUMN facebook_uuid uuid")
+	_, err := tx.Exec("ALTER TABLE whatsmeow_device ADD COLUMN facebook_uuid uuid")
 	return err
 }

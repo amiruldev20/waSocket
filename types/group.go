@@ -31,6 +31,7 @@ type GroupInfo struct {
 	GroupParent
 	GroupLinkedParent
 	GroupIsDefaultSub
+	GroupMembershipApprovalMode
 
 	GroupCreated time.Time
 
@@ -51,6 +52,10 @@ type GroupLinkedParent struct {
 
 type GroupIsDefaultSub struct {
 	IsDefaultSubGroup bool
+}
+
+type GroupMembershipApprovalMode struct {
+	IsApprovalRequired bool
 }
 
 // GroupName contains the name of a group along with metadata of who set it and when.

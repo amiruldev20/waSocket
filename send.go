@@ -38,7 +38,7 @@ import (
 // GenerateMessageID generates a random string that can be used as a message ID on WhatsApp.
 //
 //	msgID := cli.GenerateMessageID()
-//	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, waSocket.SendRequestExtra{ID: msgID})
+//	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, whatsmeow.SendRequestExtra{ID: msgID})
 func (cli *Client) GenerateMessageID() types.MessageID {
 	if cli.MessengerConfig != nil {
 		return types.MessageID(strconv.FormatInt(GenerateFacebookMessageID(), 10))
@@ -62,8 +62,8 @@ func GenerateFacebookMessageID() int64 {
 
 // GenerateMessageID generates a random string that can be used as a message ID on WhatsApp.
 //
-//	msgID := waSocket.GenerateMessageID()
-//	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, waSocket.SendRequestExtra{ID: msgID})
+//	msgID := whatsmeow.GenerateMessageID()
+//	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, whatsmeow.SendRequestExtra{ID: msgID})
 //
 // Deprecated: WhatsApp web has switched to using a hash of the current timestamp, user id and random bytes. Use Client.GenerateMessageID instead.
 func GenerateMessageID() types.MessageID {
@@ -124,7 +124,7 @@ type SendResponse struct {
 //
 // When providing optional parameters, add a single instance of this struct as the last parameter:
 //
-//	cli.SendMessage(ctx, to, message, waSocket.SendRequestExtra{...})
+//	cli.SendMessage(ctx, to, message, whatsmeow.SendRequestExtra{...})
 //
 // Trying to add multiple extra parameters will return an error.
 type SendRequestExtra struct {
@@ -416,7 +416,7 @@ func (cli *Client) BuildReaction(chat, sender types.JID, id types.MessageID, rea
 // BuildUnavailableMessageRequest builds a message to request the user's primary device to send
 // the copy of a message that this client was unable to decrypt.
 //
-// The built message can be sent using Client.SendMessage, but you must pass waSocket.SendRequestExtra{Peer: true} as the last parameter.
+// The built message can be sent using Client.SendMessage, but you must pass whatsmeow.SendRequestExtra{Peer: true} as the last parameter.
 // The full response will come as a ProtocolMessage with type `PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE`.
 // The response events will also be dispatched as normal *events.Message's with UnavailableRequestID set to the request message ID.
 func (cli *Client) BuildUnavailableMessageRequest(chat, sender types.JID, id string) *waProto.Message {
@@ -435,7 +435,7 @@ func (cli *Client) BuildUnavailableMessageRequest(chat, sender types.JID, id str
 
 // BuildHistorySyncRequest builds a message to request additional history from the user's primary device.
 //
-// The built message can be sent using Client.SendMessage, but you must pass waSocket.SendRequestExtra{Peer: true} as the last parameter.
+// The built message can be sent using Client.SendMessage, but you must pass whatsmeow.SendRequestExtra{Peer: true} as the last parameter.
 // The response will come as an *events.HistorySync with type `ON_DEMAND`.
 //
 // The response will contain to `count` messages immediately before the given message.
@@ -606,13 +606,12 @@ func (cli *Client) sendGroup(ctx context.Context, to, ownID types.JID, id types.
 	var err error
 	start := time.Now()
 	if to.Server == types.GroupServer {
-		// participants, err = cli.getGroupMembers(ctx, to)
-		/*participants, err = cli.getGroupMembers(ctx, to)
-		if err != nil {
-			return "", nil, fmt.Errorf("failed to get group members: %w", err)
-		}
-		}*/
 		participants = []types.JID{ownID}
+		// Instead fetching all of the participants, use own participants to speed up things
+		// participants, err = cli.getGroupMembers(ctx, to)
+		// if err != nil {
+		// 	return "", nil, fmt.Errorf("failed to get group members: %w", err)
+		// }
 	} else {
 		// TODO use context
 		participants, err = cli.getBroadcastListParticipants(to)

@@ -64,7 +64,6 @@ type Client struct {
 	isLoggedIn            atomic.Bool
 	expectedDisconnect    atomic.Bool
 	EnableAutoReconnect   bool
-	AutoReconnectTimes    int
 	LastSuccessfulConnect time.Time
 	AutoReconnectErrors   int
 	// AutoReconnectHook is called when auto-reconnection fails. If the function returns false,
@@ -196,7 +195,7 @@ const handlerQueueSize = 2048
 //	if err != nil {
 //		panic(err)
 //	}
-//	client := waSocket.NewClient(deviceStore, nil)
+//	client := whatsmeow.NewClient(deviceStore, nil)
 func NewClient(deviceStore *store.Device, log waLog.Logger) *Client {
 	if log == nil {
 		log = waLog.Noop
@@ -234,7 +233,6 @@ func NewClient(deviceStore *store.Device, log waLog.Logger) *Client {
 		pendingPhoneRerequests: make(map[types.MessageID]context.CancelFunc),
 
 		EnableAutoReconnect:   true,
-		AutoReconnectTimes:    0,
 		AutoTrustIdentity:     true,
 		DontSendSelfBroadcast: true,
 	}
@@ -486,22 +484,19 @@ func (cli *Client) autoReconnect() {
 	if !cli.EnableAutoReconnect || cli.Store.ID == nil {
 		return
 	}
-	thisAutoReconnect := 0
 	for {
 		autoReconnectDelay := time.Duration(cli.AutoReconnectErrors) * 2 * time.Second
 		cli.Log.Debugf("Automatically reconnecting after %v", autoReconnectDelay)
 		cli.AutoReconnectErrors++
 		time.Sleep(autoReconnectDelay)
 		err := cli.Connect()
-		thisAutoReconnect++
 		if errors.Is(err, ErrAlreadyConnected) {
 			cli.Log.Debugf("Connect() said we're already connected after autoreconnect sleep")
 			return
 		} else if err != nil {
 			cli.Log.Errorf("Error reconnecting after autoreconnect sleep: %v", err)
-			cli.Log.Errorf("Error reconnecting after autoreconnect sleep: %v,automatically retried %d times so far", err, thisAutoReconnect)
-			if cli.AutoReconnectTimes > 0 && thisAutoReconnect >= cli.AutoReconnectTimes {
-				cli.Log.Errorf("Max autoreconnects reached, giving up")
+			if cli.AutoReconnectHook != nil && !cli.AutoReconnectHook(err) {
+				cli.Log.Debugf("AutoReconnectHook returned false, not reconnecting")
 				return
 			}
 		} else {
@@ -599,7 +594,7 @@ func (cli *Client) Logout() error {
 // wrap the whole handler in another struct:
 //
 //	type MyClient struct {
-//		WAClient *waSocket.Client
+//		WAClient *whatsmeow.Client
 //		eventHandlerID uint32
 //	}
 //

@@ -175,6 +175,31 @@ func (cli *Client) UpdateGroupParticipants(jid types.JID, participantChanges []t
 	return participants, nil
 }
 
+type GroupApproval string
+
+const (
+	GroupApprovalOn  GroupApproval = "on"
+	GroupApprovalOff GroupApproval = "off"
+)
+
+// SetGroupApproval can be used to change the group approval into on/off
+
+func (cli *Client) SetGroupApproval(jid types.JID, option GroupApproval) (*waBinary.Node, error) {
+	resp, err := cli.sendGroupIQ(context.TODO(), iqSet, jid, waBinary.Node{
+		Tag:   "membership_approval_mode",
+		Attrs: nil,
+		Content: []waBinary.Node{{
+			Tag:     "group_join",
+			Attrs:   waBinary.Attrs{"state": string(option)},
+			Content: nil,
+		}},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 // GetGroupRequestParticipants gets the list of participants that have requested to join the group.
 func (cli *Client) GetGroupRequestParticipants(jid types.JID) ([]types.JID, error) {
 	resp, err := cli.sendGroupIQ(context.TODO(), iqGet, jid, waBinary.Node{
@@ -439,6 +464,12 @@ func (cli *Client) JoinGroupWithLink(code string) (types.JID, error) {
 	} else if err != nil {
 		return types.EmptyJID, err
 	}
+
+	membershipApprovalModeNode, ok := resp.GetOptionalChildByTag("membership_approval_request")
+	if ok {
+		return membershipApprovalModeNode.AttrGetter().JID("jid"), nil
+	}
+
 	groupNode, ok := resp.GetOptionalChildByTag("group")
 	if !ok {
 		return types.EmptyJID, &ElementMissingError{Tag: "group", In: "response to group link join query"}
@@ -639,8 +670,9 @@ func (cli *Client) parseGroupNode(groupNode *waBinary.Node) (*types.GroupInfo, e
 			group.IsParent = true
 			group.DefaultMembershipApprovalMode = childAG.OptionalString("default_membership_approval_mode")
 		case "incognito":
-			group.IsIncognito = true
-		// TODO: membership_approval_mode
+			group.IsIncognito = true	
+		case "membership_approval_mode":
+			group.IsApprovalRequired = true
 		default:
 			cli.Log.Debugf("Unknown element in group node %s: %s", group.JID.String(), child.XMLString())
 		}
@@ -809,6 +841,14 @@ func (cli *Client) parseGroupChange(node *waBinary.Node) (*events.GroupInfo, err
 			evt.Unlink.Group, err = parseGroupLinkTargetNode(&groupNode)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse group unlink node in group change: %w", err)
+			}
+		case "membership_approval_mode":
+			IsApprovalRequired := false
+			if child.Content.([]waBinary.Node)[0].Attrs["state"] == "on" {
+				IsApprovalRequired = true
+			}
+			evt.MembershipApprovalMode = &types.GroupMembershipApprovalMode{
+				IsApprovalRequired: IsApprovalRequired,
 			}
 		default:
 			evt.UnknownChanges = append(evt.UnknownChanges, &child)
