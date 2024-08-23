@@ -195,7 +195,7 @@ const handlerQueueSize = 2048
 //	if err != nil {
 //		panic(err)
 //	}
-//	client := whatsmeow.NewClient(deviceStore, nil)
+//	client := waSocket.NewClient(deviceStore, nil)
 func NewClient(deviceStore *store.Device, log waLog.Logger) *Client {
 	if log == nil {
 		log = waLog.Noop
@@ -238,6 +238,7 @@ func NewClient(deviceStore *store.Device, log waLog.Logger) *Client {
 	}
 	cli.nodeHandlers = map[string]nodeHandler{
 		"message":      cli.handleEncryptedMessage,
+		"appdata":      cli.handleEncryptedMessage,
 		"receipt":      cli.handleReceipt,
 		"call":         cli.handleCallEvent,
 		"chatstate":    cli.handleChatState,
@@ -594,7 +595,7 @@ func (cli *Client) Logout() error {
 // wrap the whole handler in another struct:
 //
 //	type MyClient struct {
-//		WAClient *whatsmeow.Client
+//		WAClient *waSocket.Client
 //		eventHandlerID uint32
 //	}
 //

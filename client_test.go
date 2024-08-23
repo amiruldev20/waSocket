@@ -4,7 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package main
+package waSocket_test
 
 import (
 	"context"
@@ -13,10 +13,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/amiruldev20/waSocket"
+	waSocket "github.com/amiruldev20/waSocket"
 	"github.com/amiruldev20/waSocket/store/sqlstore"
 	"github.com/amiruldev20/waSocket/types/events"
-	_ "github.com/mattn/go-sqlite3"
 	waLog "github.com/amiruldev20/waSocket/util/log"
 )
 
@@ -27,7 +26,7 @@ func eventHandler(evt interface{}) {
 	}
 }
 
-func main() {
+func Example() {
 	// |------------------------------------------------------------------------------------------------------|
 	// | NOTE: You must also import the appropriate DB connector, e.g. github.com/mattn/go-sqlite3 for SQLite |
 	// |------------------------------------------------------------------------------------------------------|

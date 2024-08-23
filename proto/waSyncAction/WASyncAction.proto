@@ -1,6 +1,6 @@
 syntax = "proto2";
 package WASyncAction;
-option go_package = "github.com/amiruldev20/waSocket/proto/waSyncAction";
+option go_package = "go.mau.fi/whatsmeow/proto/waSyncAction";
 
 import "waChatLockSettings/WAProtobufsChatLockSettings.proto";
 import "waDeviceCapabilities/WAProtobufsDeviceCapabilities.proto";

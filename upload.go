@@ -44,7 +44,7 @@ type UploadResponse struct {
 //
 // For example, to send an image:
 //
-//	resp, err := cli.Upload(context.Background(), yourImageBytes, whatsmeow.MediaImage)
+//	resp, err := cli.Upload(context.Background(), yourImageBytes, waSocket.MediaImage)
 //	// handle error
 //
 //	imageMsg := &waE2E.ImageMessage{
@@ -102,7 +102,7 @@ func (cli *Client) UploadReader(ctx context.Context, plaintext io.Reader, tempFi
 	resp.MediaKey = random.Bytes(32)
 	iv, cipherKey, macKey, _ := getMediaKeys(resp.MediaKey, appInfo)
 	if tempFile == nil {
-		tempFile, err = os.CreateTemp("", "whatsmeow-upload-*")
+		tempFile, err = os.CreateTemp("", "waSocket-upload-*")
 		if err != nil {
 			err = fmt.Errorf("failed to create temporary file: %w", err)
 			return
@@ -135,7 +135,7 @@ func (cli *Client) UploadReader(ctx context.Context, plaintext io.Reader, tempFi
 //
 // Example:
 //
-//	resp, err := cli.UploadNewsletter(context.Background(), yourImageBytes, whatsmeow.MediaImage)
+//	resp, err := cli.UploadNewsletter(context.Background(), yourImageBytes, waSocket.MediaImage)
 //	// handle error
 //
 //	imageMsg := &waE2E.ImageMessage{
@@ -152,7 +152,7 @@ func (cli *Client) UploadReader(ctx context.Context, plaintext io.Reader, tempFi
 //	}
 //	_, err = cli.SendMessage(context.Background(), newsletterJID, &waE2E.Message{
 //		ImageMessage: imageMsg,
-//	}, whatsmeow.SendRequestExtra{
+//	}, waSocket.SendRequestExtra{
 //		// Unlike normal media, newsletters also include a "media handle" in the send request.
 //		MediaHandle: resp.Handle,
 //	})

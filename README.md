@@ -1,20 +1,20 @@
-# whatsmeow
-[![Go Reference](https://pkg.go.dev/badge/go.mau.fi/whatsmeow.svg)](https://pkg.go.dev/go.mau.fi/whatsmeow)
+# waSocket
+[![Go Reference](https://pkg.go.dev/badge/github.com/amiruldev20/waSocket.svg)](https://pkg.go.dev/github.com/amiruldev20/waSocket)
 
-whatsmeow is a Go library for the WhatsApp web multidevice API.
+waSocket is a Go library for the WhatsApp web multidevice API.
 
 ## Discussion
-Matrix room: [#whatsmeow:maunium.net](https://matrix.to/#/#whatsmeow:maunium.net)
+Matrix room: [#waSocket:maunium.net](https://matrix.to/#/#waSocket:maunium.net)
 
 For questions about the WhatsApp protocol (like how to send a specific type of
 message), you can also use the [WhatsApp protocol Q&A] section on GitHub
 discussions.
 
-[WhatsApp protocol Q&A]: https://github.com/tulir/whatsmeow/discussions/categories/whatsapp-protocol-q-a
+[WhatsApp protocol Q&A]: https://github.com/tulir/waSocket/discussions/categories/whatsapp-protocol-q-a
 
 ## Usage
-The [godoc](https://pkg.go.dev/go.mau.fi/whatsmeow) includes docs for all methods and event types.
-There's also a [simple example](https://pkg.go.dev/go.mau.fi/whatsmeow#example-package) at the top.
+The [godoc](https://pkg.go.dev/github.com/amiruldev20/waSocket) includes docs for all methods and event types.
+There's also a [simple example](https://pkg.go.dev/github.com/amiruldev20/waSocket#example-package) at the top.
 
 ## Features
 Most core features are already present:
