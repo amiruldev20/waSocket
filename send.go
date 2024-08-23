@@ -1016,6 +1016,7 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 	includeIdentity := false
 	participantNodes := make([]waBinary.Node, 0, len(allDevices))
 	var retryDevices []types.JID
+
 	for _, jid := range allDevices {
 		plaintext := msgPlaintext
 		if jid.User == ownID.User && dsmPlaintext != nil {
@@ -1024,6 +1025,7 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 			}
 			plaintext = dsmPlaintext
 		}
+
 		encrypted, isPreKey, err := cli.encryptMessageForDeviceAndWrap(plaintext, jid, nil, encAttrs)
 		if errors.Is(err, ErrNoSession) {
 			retryDevices = append(retryDevices, jid)
@@ -1038,6 +1040,7 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 			includeIdentity = true
 		}
 	}
+
 	if len(retryDevices) > 0 {
 		bundles, err := cli.fetchPreKeys(ctx, retryDevices)
 		if err != nil {
@@ -1049,15 +1052,23 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 					cli.Log.Warnf("Failed to fetch prekey for %s: %v", jid, resp.err)
 					continue
 				}
+				// check resp.bundle nil
+				if resp.bundle == nil {
+					cli.Log.Warnf("Prekey bundle for %s is nil, skipping encryption", jid)
+					continue
+				}
+
 				plaintext := msgPlaintext
 				if jid.User == ownID.User && dsmPlaintext != nil {
 					plaintext = dsmPlaintext
 				}
+
 				encrypted, isPreKey, err := cli.encryptMessageForDeviceAndWrap(plaintext, jid, resp.bundle, encAttrs)
 				if err != nil {
 					cli.Log.Warnf("Failed to encrypt %s for %s (retry): %v", id, jid, err)
 					continue
 				}
+
 				participantNodes = append(participantNodes, *encrypted)
 				if isPreKey {
 					includeIdentity = true
@@ -1065,6 +1076,7 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 			}
 		}
 	}
+
 	return participantNodes, includeIdentity
 }
 
