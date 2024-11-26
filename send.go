@@ -40,7 +40,7 @@ import (
 //	msgID := cli.GenerateMessageID()
 //	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, waSocket.SendRequestExtra{ID: msgID})
 func (cli *Client) GenerateMessageID() types.MessageID {
-	if cli.MessengerConfig != nil {
+	if cli != nil && cli.MessengerConfig != nil {
 		return types.MessageID(strconv.FormatInt(GenerateFacebookMessageID(), 10))
 	}
 	data := make([]byte, 8, 8+20+16)
@@ -167,6 +167,10 @@ type SendRequestExtra struct {
 // field in incoming message events to figure out what it contains is also a good way to learn how to
 // send the same kind of message.
 func (cli *Client) SendMessage(ctx context.Context, to types.JID, message *waE2E.Message, extra ...SendRequestExtra) (resp SendResponse, err error) {
+	if cli == nil {
+		err = ErrClientIsNil
+		return
+	}
 	var req SendRequestExtra
 	if len(extra) > 1 {
 		err = errors.New("only one extra parameter may be provided to SendMessage")
@@ -607,11 +611,11 @@ func (cli *Client) sendGroup(ctx context.Context, to, ownID types.JID, id types.
 	start := time.Now()
 	if to.Server == types.GroupServer {
 		participants = []types.JID{ownID}
-		/*
-			participants, err = cli.getGroupMembers(ctx, to)
-			if err != nil {
-				return "", nil, fmt.Errorf("failed to get group members: %w", err)
-			}*/
+		// Skip fetching whole member
+		// participants, err = cli.getGroupMembers(ctx, to)
+		// if err != nil {
+		// 	return "", nil, fmt.Errorf("failed to get group members: %w", err)
+		// }
 	} else {
 		// TODO use context
 		participants, err = cli.getBroadcastListParticipants(to)
@@ -1016,7 +1020,6 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 	includeIdentity := false
 	participantNodes := make([]waBinary.Node, 0, len(allDevices))
 	var retryDevices []types.JID
-
 	for _, jid := range allDevices {
 		plaintext := msgPlaintext
 		if jid.User == ownID.User && dsmPlaintext != nil {
@@ -1025,7 +1028,6 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 			}
 			plaintext = dsmPlaintext
 		}
-
 		encrypted, isPreKey, err := cli.encryptMessageForDeviceAndWrap(plaintext, jid, nil, encAttrs)
 		if errors.Is(err, ErrNoSession) {
 			retryDevices = append(retryDevices, jid)
@@ -1040,7 +1042,6 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 			includeIdentity = true
 		}
 	}
-
 	if len(retryDevices) > 0 {
 		bundles, err := cli.fetchPreKeys(ctx, retryDevices)
 		if err != nil {
@@ -1052,23 +1053,15 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 					cli.Log.Warnf("Failed to fetch prekey for %s: %v", jid, resp.err)
 					continue
 				}
-				// check resp.bundle nil
-				if resp.bundle == nil {
-					cli.Log.Warnf("Prekey bundle for %s is nil, skipping encryption", jid)
-					continue
-				}
-
 				plaintext := msgPlaintext
 				if jid.User == ownID.User && dsmPlaintext != nil {
 					plaintext = dsmPlaintext
 				}
-
 				encrypted, isPreKey, err := cli.encryptMessageForDeviceAndWrap(plaintext, jid, resp.bundle, encAttrs)
 				if err != nil {
 					cli.Log.Warnf("Failed to encrypt %s for %s (retry): %v", id, jid, err)
 					continue
 				}
-
 				participantNodes = append(participantNodes, *encrypted)
 				if isPreKey {
 					includeIdentity = true
@@ -1076,7 +1069,6 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 			}
 		}
 	}
-
 	return participantNodes, includeIdentity
 }
 

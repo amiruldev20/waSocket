@@ -13,7 +13,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	waSocket "github.com/amiruldev20/waSocket"
+	"github.com/amiruldev20/waSocket"
 	"github.com/amiruldev20/waSocket/store/sqlstore"
 	"github.com/amiruldev20/waSocket/types/events"
 	waLog "github.com/amiruldev20/waSocket/util/log"
