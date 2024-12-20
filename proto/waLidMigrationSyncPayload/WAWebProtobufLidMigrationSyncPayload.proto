@@ -1,6 +1,6 @@
 syntax = "proto2";
 package WAWebProtobufLidMigrationSyncPayload;
-option go_package = "github.com/amiruldev20/waSocket/proto/waLidMigrationSyncPayload";
+option go_package = "go.mau.fi/whatsmeow/proto/waLidMigrationSyncPayload";
 
 message LIDMigrationMapping {
 	required uint64 pn = 1;
