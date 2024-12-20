@@ -1,9 +1,10 @@
 # waSocket
-[![Go Reference](https://pkg.go.dev/badge/go.mau.fi/waSocket.svg)](https://pkg.go.dev/github.com/amiruldev20/waSocket)
+[![Go Reference](https://pkg.go.dev/badge/github.com/amiruldev20/waSocket.svg)](https://pkg.go.dev/github.com/amiruldev20/waSocket)
 
 waSocket is a Go library for the WhatsApp web multidevice API.
 
 ## Discussion
+Matrix room: [#waSocket:maunium.net](https://matrix.to/#/#waSocket:maunium.net)
 
 For questions about the WhatsApp protocol (like how to send a specific type of
 message), you can also use the [WhatsApp protocol Q&A] section on GitHub

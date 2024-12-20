@@ -1,12 +1,14 @@
 
-'waMediaEntryData/WAMediaEntryData.protoWAMediaEntryData"¡
+'waMediaEntryData/WAMediaEntryData.protoWAMediaEntryData"ï¿½
 
 MediaEntry
 
 fileSHA256 (R
 fileSHA256
 mediaKey (RmediaKey$
-fileEncSHA256 (RfileEncSHA256
+
+fileEncSHA256 (R
+fileEncSHA256
 
 directPath (	R
 directPath,
@@ -19,22 +21,26 @@ directPath,
  (	RobjectID
 FBID (	RFBIDh
 downloadableThumbnail (22.WAMediaEntryData.MediaEntry.DownloadableThumbnailRdownloadableThumbnail
-handle (	Rhandle
+handle
+ (	Rhandle
 filename (	Rfilenamek
 progressiveJPEGDetails (23.WAMediaEntryData.MediaEntry.ProgressiveJpegDetailsRprogressiveJPEGDetails
 size (RsizeB
 lastDownloadAttemptTimestamp (RlastDownloadAttemptTimestampT
 ProgressiveJpegDetails 
-scanLengths (RscanLengths
-sidecar (Rsidecarã
+scanLengths (
+RscanLengths
+sidecar (Rsidecarï¿½
 DownloadableThumbnail
 
 fileSHA256 (R
 fileSHA256$
-fileEncSHA256 (RfileEncSHA256
+
+fileEncSHA256 (R
+fileEncSHA256github.com/amiruldev20/waSocket
 
 directPath (	R
 directPath
 mediaKey (RmediaKey,
 mediaKeyTimestamp (RmediaKeyTimestamp
-objectID (	RobjectIDB,Z*go.mau.fi/whatsmeow/proto/waMediaEntryData
+objectID (	RobjectIDB,Z*go.mau.fi/waSocket/proto/waMediaEntryData

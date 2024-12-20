@@ -1,0 +1,8 @@
+
+DwaLidMigrationSyncPayload/WAWebProtobufLidMigrationSyncPayload.proto$WAWebProtobufLidMigrationSyncPayload"e
+LIDMigrationMapping
+pn (Rpn 
+assignedLid (RassignedLid
+	latestLid (R	latestLid"�
+LIDMigrationMappingSyncPayloadc
+pnToLidMappings (29.WAWebProtobufLidMigrationSyncPayload.LIDMigrationMappingRpnToLidMappingsB5Z3github.com/amiruldev20/waSocket/proto/waLidMigrationSyncPayload

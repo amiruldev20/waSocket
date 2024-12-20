@@ -1,6 +1,6 @@
 syntax = "proto2";
 package WAWebProtobufsHistorySync;
-option go_package = "go.mau.fi/whatsmeow/proto/waHistorySync";
+option go_package = "github.com/amiruldev20/waSocket/proto/waHistorySync";
 
 import "waSyncAction/WASyncAction.proto";
 import "waChatLockSettings/WAProtobufsChatLockSettings.proto";
@@ -108,6 +108,7 @@ message Conversation {
 	optional bool locked = 46;
 	optional PrivacySystemMessage systemMessageToInsert = 47;
 	optional bool capiCreatedGroup = 48;
+	optional string accountLid = 49;
 }
 
 message GroupParticipant {

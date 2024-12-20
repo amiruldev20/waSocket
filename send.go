@@ -610,14 +610,14 @@ func (cli *Client) sendGroup(ctx context.Context, to, ownID types.JID, id types.
 	var err error
 	start := time.Now()
 	if to.Server == types.GroupServer {
-		participants = []types.JID{ownID}
-		// Skip fetching whole member
-		// participants, err = cli.getGroupMembers(ctx, to)
-		// if err != nil {
-		// 	return "", nil, fmt.Errorf("failed to get group members: %w", err)
-		// }
+		fmt.Println("Get participants")
+		participants, err = cli.getGroupMembers(ctx, to)
+		if err != nil {
+			return "", nil, fmt.Errorf("failed to get group members: %w", err)
+		}
 	} else {
 		// TODO use context
+		fmt.Println("Get jid")
 		participants, err = cli.getBroadcastListParticipants(to)
 		if err != nil {
 			return "", nil, fmt.Errorf("failed to get broadcast list members: %w", err)

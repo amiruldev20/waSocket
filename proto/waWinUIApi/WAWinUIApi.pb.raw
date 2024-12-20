@@ -1,12 +1,12 @@
 
 waWinUIApi/WAWinUIApi.proto
-WAWinUIApi"õ
+WAWinUIApi"ï¿½
 PositronMessage
 	timestamp (R	timestamp
 type (	Rtype
 body (	Rbody2
 ID (2".WAWinUIApi.PositronMessage.MsgKeyRID
-JSONc (	RJSON¬
+JSONc (	RJSONï¿½
 MsgKey
 fromMe (RfromMe7
 remote (2.WAWinUIApi.PositronMessage.WIDRremote
@@ -15,13 +15,13 @@ WAWinUIApi"õ
 WID
 
 serialized (	R
-serialized"†
+serialized"ï¿½
 PositronChat
 ID (	RID
 name (	Rname
 	timestamp (R	timestamp 
 unreadCount (RunreadCount
-JSONc (	RJSON"Ÿ
+JSONc (	RJSON"ï¿½
 PositronContact
 ID (	RID 
 phoneNumber (	RphoneNumber
@@ -35,14 +35,16 @@ serialized"†
 PositronGroupParticipants
 ID (	RID"
 participants (	Rparticipants
-JSONc (	RJSON"Â
+JSONc (	RJSON"ï¿½
 PositronReaction
 ID (	RID"
 parentMsgKey (	RparentMsgKey"
 reactionText (	RreactionText
 	timestamp (R	timestamp$
-senderUserJID (	RsenderUserJID
-JSONc (	RJSON"Ê
+
+senderUserJID (	R
+senderUserJID
+JSONc (	RJSON"ï¿½
 PositronData>
 
 dataSource (2.WAWinUIApi.PositronDataSourceR
@@ -50,13 +52,15 @@ dataSource7
 messages (2.WAWinUIApi.PositronMessageRmessages.
 chats (2.WAWinUIApi.PositronChatRchats7
 contacts (2.WAWinUIApi.PositronContactRcontactsG
-groupMetadata (2!.WAWinUIApi.PositronGroupMetadataRgroupMetadataS
+
+groupMetadata (2!.WAWinUIApi.PositronGroupMetadataR
+groupMetadataS
 groupParticipants (2%.WAWinUIApi.PositronGroupParticipantsRgroupParticipants:
 	reactions (2.WAWinUIApi.PositronReactionR	reactions*v
 PositronDataSource
 MESSAGES	
-CHATS
+CHATSgithub.com/amiruldev20/waSocket
 CONTACTS
 GROUP_METADATA
 GROUP_PARTICIPANTS
-	REACTIONSB&Z$go.mau.fi/whatsmeow/proto/waWinUIApi
+	REACTIONSB&Z$go.mau.fi/waSocket/proto/waWinUIApi
