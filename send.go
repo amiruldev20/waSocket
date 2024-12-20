@@ -618,7 +618,7 @@ func (cli *Client) sendGroup(ctx context.Context, to, ownID types.JID, id types.
 		participants = []types.JID{ownID}
 	} else {
 		// TODO use context
-		fmt.Println("Get jid")
+		//fmt.Println("Get jid")
 		participants, err = cli.getBroadcastListParticipants(to)
 		if err != nil {
 			return "", nil, fmt.Errorf("failed to get broadcast list members: %w", err)
