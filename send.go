@@ -610,11 +610,12 @@ func (cli *Client) sendGroup(ctx context.Context, to, ownID types.JID, id types.
 	var err error
 	start := time.Now()
 	if to.Server == types.GroupServer {
-		fmt.Println("Get participants")
-		participants, err = cli.getGroupMembers(ctx, to)
+		// fmt.Println("Get participants")
+		/*participants, err = cli.getGroupMembers(ctx, to)
 		if err != nil {
 			return "", nil, fmt.Errorf("failed to get group members: %w", err)
-		}
+		}*/
+		participants = []types.JID{ownID}
 	} else {
 		// TODO use context
 		fmt.Println("Get jid")
